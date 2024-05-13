@@ -633,92 +633,96 @@ const handleAddLiquidity = async (
   amount1ToMint,
   selectedPercentage
 ) => {
-  const provider = await new ethers.providers.JsonRpcProvider(
-    "http://127.0.0.1:8545/"
-  );
-  const signers = await provider.getSigner();
-  const liquidityContract = await new ethers.Contract(
-    liquidityContractAddress,
-    LiquidityManager.abi,
-    signers
-  );
-  console.log("Pass 1");
-  const signerAddress = await signers.getAddress();
-  const token0Contract = await new ethers.Contract(
-    token0Data.address,
-    ERC2.abi,
-    signers
-  );
-  const token1Contract = await new ethers.Contract(
-    token1Data.address,
-    ERC2.abi,
-    signers
-  );
-  const token1Bal = await token1Contract.balanceOf(signerAddress);
-  const token0Bal = await token0Contract.balanceOf(signerAddress);
-  const poolFee = selectedPercentage.fee;
-  const token0Amount = ethers.utils.parseUnits(
-    amount0ToMint,
-    token0Data.decimal
-  );
-  const token1Amount = ethers.utils.parseUnits(
-    amount1ToMint,
-    token1Data.decimal
-  );
-
-  // if(token0Data.symbol === "ETH"){
-  //   const tokenInContract = await connectingWithNthToken(token0Data.address);
-  //   await tokenInContract.deposit({ value: token0Amount });
-  //   await tokenInContract.approve(
-  //     await liquidityContractAddress,
-  //     token0Amount
-  //   );
-  // }
-
-  console.log(
-    `${token0Data.symbol} balance available  :   `,
-    ethers.utils.formatUnits(token0Bal, token0Data.decimal)
-  );
-  console.log(
-    `${token1Data.symbol} balance available  :   `,
-    ethers.utils.formatUnits(token1Bal, token1Data.decimal)
-  );
-
-  console.log("Pass 1 ");
-
-  await token0Contract.approve(
-    liquidityContractAddress,
-    ethers.constants.MaxUint256
-  );
-  console.log("Pass 2");
-  await token1Contract.approve(
-    liquidityContractAddress,
-    ethers.constants.MaxUint256
-  );
-  console.log("Pass 3");
-
-  console.log("Pass 4 ");
-  await token0Contract.transfer(liquidityContractAddress, token0Amount);
-  console.log("Pass 5");
-  await token1Contract.transfer(liquidityContractAddress, token1Amount);
-  console.log(
-    "Pass 6 ",
-    token0Data.address,
-    token1Data.address,
-    token0Amount.toString(),
-    token1Amount.toString(),
-    poolFee
-  );
-  const tx = await liquidityContract.mintNewPosition(
-    token0Data.address,
-    token1Data.address,
-    token0Amount.toString(),
-    token1Amount.toString(),
-    poolFee
-  );
-  console.log("Pass 7");
-  const receipt = await tx.wait();
-  return receipt;
+  try {
+    const provider = await new ethers.providers.JsonRpcProvider(
+      "http://127.0.0.1:8545/"
+    );
+    const signers = await provider.getSigner();
+    const liquidityContract = await new ethers.Contract(
+      liquidityContractAddress,
+      LiquidityManager.abi,
+      signers
+    );
+    console.log("Pass 1");
+    const signerAddress = await signers.getAddress();
+    const token0Contract = await new ethers.Contract(
+      token0Data.address,
+      ERC2.abi,
+      signers
+    );
+    const token1Contract = await new ethers.Contract(
+      token1Data.address,
+      ERC2.abi,
+      signers
+    );
+    const token1Bal = await token1Contract.balanceOf(signerAddress);
+    const token0Bal = await token0Contract.balanceOf(signerAddress);
+    const poolFee = selectedPercentage.fee;
+    const token0Amount = ethers.utils.parseUnits(
+      amount0ToMint,
+      token0Data.decimal
+    );
+    const token1Amount = ethers.utils.parseUnits(
+      amount1ToMint,
+      token1Data.decimal
+    );
+  
+    // if(token0Data.symbol === "ETH"){
+    //   const tokenInContract = await connectingWithNthToken(token0Data.address);
+    //   await tokenInContract.deposit({ value: token0Amount });
+    //   await tokenInContract.approve(
+    //     await liquidityContractAddress,
+    //     token0Amount
+    //   );
+    // }
+  
+    console.log(
+      `${token0Data.symbol} balance available  :   `,
+      ethers.utils.formatUnits(token0Bal, token0Data.decimal)
+    );
+    console.log(
+      `${token1Data.symbol} balance available  :   `,
+      ethers.utils.formatUnits(token1Bal, token1Data.decimal)
+    );
+  
+    console.log("Pass 1 ");
+  
+    await token0Contract.approve(
+      liquidityContractAddress,
+      ethers.constants.MaxUint256
+    );
+    console.log("Pass 2");
+    await token1Contract.approve(
+      liquidityContractAddress,
+      ethers.constants.MaxUint256
+    );
+    console.log("Pass 3");
+  
+    console.log("Pass 4 ");
+    await token0Contract.transfer(liquidityContractAddress, token0Amount);
+    console.log("Pass 5");
+    await token1Contract.transfer(liquidityContractAddress, token1Amount);
+    console.log(
+      "Pass 6 ",
+      token0Data.address,
+      token1Data.address,
+      token0Amount.toString(),
+      token1Amount.toString(),
+      poolFee
+    );
+    const tx = await liquidityContract.mintNewPosition(
+      token0Data.address,
+      token1Data.address,
+      token0Amount.toString(),
+      token1Amount.toString(),
+      poolFee
+    );
+    console.log("Pass 7");
+    const receipt = await tx.wait();
+    return receipt;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const handleSwapToken = async (tokenInData, tokenOutData, amountIn) => {
@@ -837,7 +841,7 @@ const minXandMaxY = async(tickLower,tickUpper)=>{
   let y = Math.pow(base, tickUpper); // Max: y DAI per USDC
   let xString = x.toString();
   let yString = y.toString();
-  
+
     let [xInteger, xDecimal] = xString.split('.');
     let [yInteger, yDecimal] = yString.split('.');
 
