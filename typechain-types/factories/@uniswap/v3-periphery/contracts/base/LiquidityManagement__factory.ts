@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Interface, type ContractRunner } from "ethers";
+import { Contract, Signer, utils } from "ethers";
+import type { Provider } from "@ethersproject/providers";
 import type {
   LiquidityManagement,
   LiquidityManagementInterface,
@@ -115,16 +116,12 @@ const _abi = [
 export class LiquidityManagement__factory {
   static readonly abi = _abi;
   static createInterface(): LiquidityManagementInterface {
-    return new Interface(_abi) as LiquidityManagementInterface;
+    return new utils.Interface(_abi) as LiquidityManagementInterface;
   }
   static connect(
     address: string,
-    runner?: ContractRunner | null
+    signerOrProvider: Signer | Provider
   ): LiquidityManagement {
-    return new Contract(
-      address,
-      _abi,
-      runner
-    ) as unknown as LiquidityManagement;
+    return new Contract(address, _abi, signerOrProvider) as LiquidityManagement;
   }
 }

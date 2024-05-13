@@ -32,14 +32,19 @@ const checkMetaMaskConnection = async () => {
 async function connectMetamask() {
   if (await checkMetaMask()) {
     try {
-      const provider = await new ethers.BrowserProvider(
-        (window as any).ethereum
-      );
-      await provider.send("eth_requestAccounts", []);
+      // const provider = await new ethers.providers.Web3Provider(
+      //   (window as any).ethereum,
+      //   currentNetwork
+      // );
+      const provider = new ethers.providers.JsonRpcProvider({
+        url: "http://127.0.0.1:8545/",
+      });
+      // await provider.send("eth_requestAccounts", []);
       const signers = await provider.getSigner();
       const address = await signers.getAddress();
       const balance = await provider.getBalance(address);
-      const balanceInEther = await ethers.formatEther(balance);
+      const balanceInEther = await ethers.utils.formatEther(balance);
+
       const network = await provider._network;
       const chainId = await provider.send("eth_chainId", []);
       return {
@@ -61,14 +66,14 @@ async function connectMetamask() {
 async function handleChainChanged(chainId:any) {
   if (await checkMetaMask()) {
     try {
-      const provider = await new ethers.BrowserProvider(
+      const provider = await new ethers.providers.Web3Provider(
         (window as any).ethereum
       );
       await provider.send("eth_requestAccounts", []);
       const signers = await provider.getSigner();
       const address = await signers.getAddress();
       const balance = await provider.getBalance(address);
-      const balanceInEther = await ethers.formatEther(balance);
+      const balanceInEther = await ethers.utils.formatEther(balance);
       const network = await provider._network;
       const chainId = await provider.send("eth_chainId", []);
       console.log(network.name, balance, balanceInEther, chainId);
@@ -122,7 +127,7 @@ async function connectToPolygonMainnet() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(polygonMainnetChainId) }],
+        params: [{ chainId: ethers.utils.hexlify(polygonMainnetChainId) }],
       });
       console.log("You have succefully switched to Polygon Main network");
     } catch (switchError) {
@@ -131,7 +136,7 @@ async function connectToPolygonMainnet() {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: ethers.toBeHex(polygonMainnetChainId),
+              chainId: ethers.utils.hexlify(polygonMainnetChainId),
               chainName: "Polygon Mainnet",
               nativeCurrency: {
                 name: "MATIC",
@@ -161,7 +166,7 @@ async function connectToArbitrumMainnet() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(arbitrumMainnetChainId) }],
+        params: [{ chainId: ethers.utils.hexlify(arbitrumMainnetChainId) }],
       });
       console.log("You have succefully switched to Arbitrum Main network");
     } catch (switchError) {
@@ -170,7 +175,7 @@ async function connectToArbitrumMainnet() {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: ethers.toBeHex(arbitrumMainnetChainId),
+              chainId: ethers.utils.hexlify(arbitrumMainnetChainId),
               chainName: "Arbitrum One",
               nativeCurrency: {
                 name: "ETH",
@@ -199,7 +204,7 @@ async function connectToOptimismMainnet() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(optimismMainnetChainId)}],
+        params: [{ chainId: ethers.utils.hexlify(optimismMainnetChainId)}],
       });
       console.log("You have succefully switched to Optimism Main network");
     } catch (switchError) {
@@ -208,7 +213,7 @@ async function connectToOptimismMainnet() {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: ethers.toBeHex(optimismMainnetChainId),
+              chainId: ethers.utils.hexlify(optimismMainnetChainId),
               chainName: "OP Mainnet",
               nativeCurrency: {
                 name: "ETH",
@@ -237,7 +242,7 @@ async function connectToBaseMainnet() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(baseMainnetChainId) }],
+        params: [{ chainId: ethers.utils.hexlify(baseMainnetChainId) }],
       });
       console.log("You have succefully switched to Base Main network");
     } catch (switchError) {
@@ -246,7 +251,7 @@ async function connectToBaseMainnet() {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: ethers.toBeHex(baseMainnetChainId),
+              chainId: ethers.utils.hexlify(baseMainnetChainId),
               chainName: "Base",
               nativeCurrency: {
                 name: "ETH",
@@ -275,7 +280,7 @@ async function connectToBNBMainnet() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(BNBMainnetChainId) }],
+        params: [{ chainId: ethers.utils.hexlify(BNBMainnetChainId) }],
       });
       console.log("You have succefully switched to BNB Main network");
     } catch (switchError) {
@@ -284,7 +289,7 @@ async function connectToBNBMainnet() {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: ethers.toBeHex(BNBMainnetChainId),
+              chainId: ethers.utils.hexlify(BNBMainnetChainId),
               chainName: "BNB Smart Chain Mainnet",
               nativeCurrency: {
                 name: "BNB",
@@ -324,7 +329,7 @@ async function connectToAvalancheMainnet() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(AvalancheMainnetChainId) }],
+        params: [{ chainId: ethers.utils.hexlify(AvalancheMainnetChainId) }],
       });
       console.log("You have succefully switched to Avalanche Main network");
     } catch (switchError) {
@@ -361,7 +366,7 @@ async function connectToCeloMainnet() {
     try {
       await provider.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: ethers.toBeHex(celoMainnetChainId) }],
+        params: [{ chainId: ethers.utils.hexlify(celoMainnetChainId) }],
       });
       console.log("You have succefully switched to celo Main network");
     } catch (switchError) {
@@ -385,12 +390,12 @@ export {
   connectMetamask,
   checkMetaMaskConnection,
   handleChainChanged,
-  connectToEthereumMainnet,
-  connectToPolygonMainnet,
-  connectToArbitrumMainnet,
-  connectToOptimismMainnet,
-  connectToBaseMainnet,
-  connectToBNBMainnet,
-  connectToAvalancheMainnet,
-  connectToCeloMainnet
+  // connectToEthereumMainnet,
+  // connectToPolygonMainnet,
+  // connectToArbitrumMainnet,
+  // connectToOptimismMainnet,
+  // connectToBaseMainnet,
+  // connectToBNBMainnet,
+  // connectToAvalancheMainnet,
+  // connectToCeloMainnet
 };

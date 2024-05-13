@@ -3,26 +3,39 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumber,
   BigNumberish,
   BytesLike,
-  FunctionFragment,
-  Result,
-  Interface,
-  ContractRunner,
-  ContractMethod,
-  Listener,
+  CallOverrides,
+  PopulatedTransaction,
+  Signer,
+  utils,
 } from "ethers";
+import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedContractEvent,
-  TypedDeferredTopicFilter,
-  TypedEventLog,
+  TypedEventFilter,
+  TypedEvent,
   TypedListener,
-  TypedContractMethod,
+  OnEvent,
+  PromiseOrValue,
 } from "../../../../../common";
 
-export interface IUniswapV3PoolStateInterface extends Interface {
+export interface IUniswapV3PoolStateInterface extends utils.Interface {
+  functions: {
+    "feeGrowthGlobal0X128()": FunctionFragment;
+    "feeGrowthGlobal1X128()": FunctionFragment;
+    "liquidity()": FunctionFragment;
+    "observations(uint256)": FunctionFragment;
+    "positions(bytes32)": FunctionFragment;
+    "protocolFees()": FunctionFragment;
+    "slot0()": FunctionFragment;
+    "tickBitmap(int16)": FunctionFragment;
+    "ticks(int24)": FunctionFragment;
+  };
+
   getFunction(
-    nameOrSignature:
+    nameOrSignatureOrTopic:
       | "feeGrowthGlobal0X128"
       | "feeGrowthGlobal1X128"
       | "liquidity"
@@ -45,11 +58,11 @@ export interface IUniswapV3PoolStateInterface extends Interface {
   encodeFunctionData(functionFragment: "liquidity", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "observations",
-    values: [BigNumberish]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "positions",
-    values: [BytesLike]
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "protocolFees",
@@ -58,9 +71,12 @@ export interface IUniswapV3PoolStateInterface extends Interface {
   encodeFunctionData(functionFragment: "slot0", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "tickBitmap",
-    values: [BigNumberish]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(functionFragment: "ticks", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "ticks",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "feeGrowthGlobal0X128",
@@ -83,216 +99,348 @@ export interface IUniswapV3PoolStateInterface extends Interface {
   decodeFunctionResult(functionFragment: "slot0", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tickBitmap", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ticks", data: BytesLike): Result;
+
+  events: {};
 }
 
 export interface IUniswapV3PoolState extends BaseContract {
-  connect(runner?: ContractRunner | null): IUniswapV3PoolState;
-  waitForDeployment(): Promise<this>;
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
   interface: IUniswapV3PoolStateInterface;
 
-  queryFilter<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
+  queryFilter<TEvent extends TypedEvent>(
+    event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
-  queryFilter<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  ): Promise<Array<TEvent>>;
 
-  on<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  on<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
-  once<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  once<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  functions: {
+    feeGrowthGlobal0X128(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-  listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
-  ): Promise<Array<TypedListener<TCEvent>>>;
-  listeners(eventName?: string): Promise<Array<Listener>>;
-  removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
-  ): Promise<this>;
+    feeGrowthGlobal1X128(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-  feeGrowthGlobal0X128: TypedContractMethod<[], [bigint], "view">;
+    liquidity(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-  feeGrowthGlobal1X128: TypedContractMethod<[], [bigint], "view">;
-
-  liquidity: TypedContractMethod<[], [bigint], "view">;
-
-  observations: TypedContractMethod<
-    [index: BigNumberish],
-    [
-      [bigint, bigint, bigint, boolean] & {
-        blockTimestamp: bigint;
-        tickCumulative: bigint;
-        secondsPerLiquidityCumulativeX128: bigint;
+    observations(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [number, BigNumber, BigNumber, boolean] & {
+        blockTimestamp: number;
+        tickCumulative: BigNumber;
+        secondsPerLiquidityCumulativeX128: BigNumber;
         initialized: boolean;
       }
-    ],
-    "view"
-  >;
+    >;
 
-  positions: TypedContractMethod<
-    [key: BytesLike],
-    [
-      [bigint, bigint, bigint, bigint, bigint] & {
-        _liquidity: bigint;
-        feeGrowthInside0LastX128: bigint;
-        feeGrowthInside1LastX128: bigint;
-        tokensOwed0: bigint;
-        tokensOwed1: bigint;
+    positions(
+      key: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+        _liquidity: BigNumber;
+        feeGrowthInside0LastX128: BigNumber;
+        feeGrowthInside1LastX128: BigNumber;
+        tokensOwed0: BigNumber;
+        tokensOwed1: BigNumber;
       }
-    ],
-    "view"
-  >;
+    >;
 
-  protocolFees: TypedContractMethod<
-    [],
-    [[bigint, bigint] & { token0: bigint; token1: bigint }],
-    "view"
-  >;
+    protocolFees(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { token0: BigNumber; token1: BigNumber }
+    >;
 
-  slot0: TypedContractMethod<
-    [],
-    [
-      [bigint, bigint, bigint, bigint, bigint, bigint, boolean] & {
-        sqrtPriceX96: bigint;
-        tick: bigint;
-        observationIndex: bigint;
-        observationCardinality: bigint;
-        observationCardinalityNext: bigint;
-        feeProtocol: bigint;
+    slot0(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, number, number, number, number, number, boolean] & {
+        sqrtPriceX96: BigNumber;
+        tick: number;
+        observationIndex: number;
+        observationCardinality: number;
+        observationCardinalityNext: number;
+        feeProtocol: number;
         unlocked: boolean;
       }
-    ],
-    "view"
-  >;
+    >;
 
-  tickBitmap: TypedContractMethod<
-    [wordPosition: BigNumberish],
-    [bigint],
-    "view"
-  >;
+    tickBitmap(
+      wordPosition: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-  ticks: TypedContractMethod<
-    [tick: BigNumberish],
-    [
-      [bigint, bigint, bigint, bigint, bigint, bigint, bigint, boolean] & {
-        liquidityGross: bigint;
-        liquidityNet: bigint;
-        feeGrowthOutside0X128: bigint;
-        feeGrowthOutside1X128: bigint;
-        tickCumulativeOutside: bigint;
-        secondsPerLiquidityOutsideX128: bigint;
-        secondsOutside: bigint;
+    ticks(
+      tick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        number,
+        boolean
+      ] & {
+        liquidityGross: BigNumber;
+        liquidityNet: BigNumber;
+        feeGrowthOutside0X128: BigNumber;
+        feeGrowthOutside1X128: BigNumber;
+        tickCumulativeOutside: BigNumber;
+        secondsPerLiquidityOutsideX128: BigNumber;
+        secondsOutside: number;
         initialized: boolean;
       }
-    ],
-    "view"
+    >;
+  };
+
+  feeGrowthGlobal0X128(overrides?: CallOverrides): Promise<BigNumber>;
+
+  feeGrowthGlobal1X128(overrides?: CallOverrides): Promise<BigNumber>;
+
+  liquidity(overrides?: CallOverrides): Promise<BigNumber>;
+
+  observations(
+    index: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [number, BigNumber, BigNumber, boolean] & {
+      blockTimestamp: number;
+      tickCumulative: BigNumber;
+      secondsPerLiquidityCumulativeX128: BigNumber;
+      initialized: boolean;
+    }
   >;
 
-  getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
-  ): T;
+  positions(
+    key: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+      _liquidity: BigNumber;
+      feeGrowthInside0LastX128: BigNumber;
+      feeGrowthInside1LastX128: BigNumber;
+      tokensOwed0: BigNumber;
+      tokensOwed1: BigNumber;
+    }
+  >;
 
-  getFunction(
-    nameOrSignature: "feeGrowthGlobal0X128"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "feeGrowthGlobal1X128"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "liquidity"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "observations"
-  ): TypedContractMethod<
-    [index: BigNumberish],
+  protocolFees(
+    overrides?: CallOverrides
+  ): Promise<[BigNumber, BigNumber] & { token0: BigNumber; token1: BigNumber }>;
+
+  slot0(
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, number, number, number, number, number, boolean] & {
+      sqrtPriceX96: BigNumber;
+      tick: number;
+      observationIndex: number;
+      observationCardinality: number;
+      observationCardinalityNext: number;
+      feeProtocol: number;
+      unlocked: boolean;
+    }
+  >;
+
+  tickBitmap(
+    wordPosition: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  ticks(
+    tick: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
     [
-      [bigint, bigint, bigint, boolean] & {
-        blockTimestamp: bigint;
-        tickCumulative: bigint;
-        secondsPerLiquidityCumulativeX128: bigint;
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      number,
+      boolean
+    ] & {
+      liquidityGross: BigNumber;
+      liquidityNet: BigNumber;
+      feeGrowthOutside0X128: BigNumber;
+      feeGrowthOutside1X128: BigNumber;
+      tickCumulativeOutside: BigNumber;
+      secondsPerLiquidityOutsideX128: BigNumber;
+      secondsOutside: number;
+      initialized: boolean;
+    }
+  >;
+
+  callStatic: {
+    feeGrowthGlobal0X128(overrides?: CallOverrides): Promise<BigNumber>;
+
+    feeGrowthGlobal1X128(overrides?: CallOverrides): Promise<BigNumber>;
+
+    liquidity(overrides?: CallOverrides): Promise<BigNumber>;
+
+    observations(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [number, BigNumber, BigNumber, boolean] & {
+        blockTimestamp: number;
+        tickCumulative: BigNumber;
+        secondsPerLiquidityCumulativeX128: BigNumber;
         initialized: boolean;
       }
-    ],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "positions"
-  ): TypedContractMethod<
-    [key: BytesLike],
-    [
-      [bigint, bigint, bigint, bigint, bigint] & {
-        _liquidity: bigint;
-        feeGrowthInside0LastX128: bigint;
-        feeGrowthInside1LastX128: bigint;
-        tokensOwed0: bigint;
-        tokensOwed1: bigint;
+    >;
+
+    positions(
+      key: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber] & {
+        _liquidity: BigNumber;
+        feeGrowthInside0LastX128: BigNumber;
+        feeGrowthInside1LastX128: BigNumber;
+        tokensOwed0: BigNumber;
+        tokensOwed1: BigNumber;
       }
-    ],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "protocolFees"
-  ): TypedContractMethod<
-    [],
-    [[bigint, bigint] & { token0: bigint; token1: bigint }],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "slot0"
-  ): TypedContractMethod<
-    [],
-    [
-      [bigint, bigint, bigint, bigint, bigint, bigint, boolean] & {
-        sqrtPriceX96: bigint;
-        tick: bigint;
-        observationIndex: bigint;
-        observationCardinality: bigint;
-        observationCardinalityNext: bigint;
-        feeProtocol: bigint;
+    >;
+
+    protocolFees(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { token0: BigNumber; token1: BigNumber }
+    >;
+
+    slot0(
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, number, number, number, number, number, boolean] & {
+        sqrtPriceX96: BigNumber;
+        tick: number;
+        observationIndex: number;
+        observationCardinality: number;
+        observationCardinalityNext: number;
+        feeProtocol: number;
         unlocked: boolean;
       }
-    ],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "tickBitmap"
-  ): TypedContractMethod<[wordPosition: BigNumberish], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "ticks"
-  ): TypedContractMethod<
-    [tick: BigNumberish],
-    [
-      [bigint, bigint, bigint, bigint, bigint, bigint, bigint, boolean] & {
-        liquidityGross: bigint;
-        liquidityNet: bigint;
-        feeGrowthOutside0X128: bigint;
-        feeGrowthOutside1X128: bigint;
-        tickCumulativeOutside: bigint;
-        secondsPerLiquidityOutsideX128: bigint;
-        secondsOutside: bigint;
+    >;
+
+    tickBitmap(
+      wordPosition: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    ticks(
+      tick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        number,
+        boolean
+      ] & {
+        liquidityGross: BigNumber;
+        liquidityNet: BigNumber;
+        feeGrowthOutside0X128: BigNumber;
+        feeGrowthOutside1X128: BigNumber;
+        tickCumulativeOutside: BigNumber;
+        secondsPerLiquidityOutsideX128: BigNumber;
+        secondsOutside: number;
         initialized: boolean;
       }
-    ],
-    "view"
-  >;
+    >;
+  };
 
   filters: {};
+
+  estimateGas: {
+    feeGrowthGlobal0X128(overrides?: CallOverrides): Promise<BigNumber>;
+
+    feeGrowthGlobal1X128(overrides?: CallOverrides): Promise<BigNumber>;
+
+    liquidity(overrides?: CallOverrides): Promise<BigNumber>;
+
+    observations(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    positions(
+      key: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    protocolFees(overrides?: CallOverrides): Promise<BigNumber>;
+
+    slot0(overrides?: CallOverrides): Promise<BigNumber>;
+
+    tickBitmap(
+      wordPosition: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    ticks(
+      tick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    feeGrowthGlobal0X128(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    feeGrowthGlobal1X128(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    liquidity(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    observations(
+      index: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    positions(
+      key: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    protocolFees(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    slot0(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    tickBitmap(
+      wordPosition: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    ticks(
+      tick: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+  };
 }

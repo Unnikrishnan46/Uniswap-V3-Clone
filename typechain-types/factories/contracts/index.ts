@@ -4,6 +4,7 @@
 export * as erc20BooSol from "./ERC20Boo.sol";
 export * as erc20LifeSol from "./ERC20Life.sol";
 export * as liquditySol from "./Liqudity.sol";
+export * as sendTokenSol from "./SendToken.sol";
 export * as swapTokenSol from "./SwapToken.sol";
 export * as interfaces from "./interfaces";
 export { SwapMultiHop__factory } from "./SwapMultiHop__factory";

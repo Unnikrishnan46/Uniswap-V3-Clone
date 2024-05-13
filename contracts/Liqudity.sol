@@ -118,7 +118,7 @@ contract LiquidityManager is IERC721Receiver {
      * @return amount0 The amount of token0
      * @return amount1 The amount of token1
      */
-    function mintNewPosition()
+    function mintNewPosition(address _tokenOne,address _tokenTwo,uint256 amount0ToMint,uint256 amount1ToMint,uint24 _poolFee)
         external
         returns (
             uint256 tokenId,
@@ -130,38 +130,38 @@ contract LiquidityManager is IERC721Receiver {
         console.log("Pass 1");
         // For this example, user will provide equal amounts of liquidity in both assets.
         // Providing liquidity in both assets means liquidity will be earning fees and is considered in-range.
-        uint256 amount0ToMint = 1e18;
-        uint256 amount1ToMint = 1e6;
+        // uint256 amount0ToMint = 1e18;
+        // uint256 amount1ToMint = 1e6;
 
         // Approve the position manager
         TransferHelper.safeApprove(
-            DAI,
+            _tokenOne,
             address(NonfungiblePositionManager),
             amount0ToMint
         );
         console.log("Pass 2");
         TransferHelper.safeApprove(
-            USDC,
+            _tokenTwo,
             address(NonfungiblePositionManager),
             amount1ToMint
         );
         console.log("Pass 3");
         INonfungiblePositionManager.MintParams
             memory params = INonfungiblePositionManager.MintParams({
-                token0: DAI,
-                token1: USDC,
-                fee: poolFee,
+                token0: _tokenOne,
+                token1: _tokenTwo,
+                fee: _poolFee,
                 tickLower: TickMath.MIN_TICK,
                 tickUpper: TickMath.MAX_TICK,
                 amount0Desired: amount0ToMint,
                 amount1Desired: amount1ToMint,
                 amount0Min: 0,
                 amount1Min: 0,
-                recipient: address(this),
+                recipient: msg.sender,
                 deadline: block.timestamp
             });
             console.log("Pass 4");
-        // Note that the pool defined by DAI/USDC and fee tier 0.01% must already be created and initialized in order to mint
+        // Note that the pool defined by _tokenOne/_tokenTwo and fee tier 0.01% must already be created and initialized in order to mint
         (tokenId, liquidity, amount0, amount1) = NonfungiblePositionManager
             .mint(params);
         console.log("Pass 5");
@@ -171,22 +171,22 @@ contract LiquidityManager is IERC721Receiver {
         // Remove allowance and refund in both assets.
         if (amount0 < amount0ToMint) {
             TransferHelper.safeApprove(
-                DAI,
+                _tokenOne,
                 address(NonfungiblePositionManager),
                 0
             );
             uint256 refund0 = amount0ToMint - amount0;
-            TransferHelper.safeTransfer(DAI, msg.sender, refund0);
+            TransferHelper.safeTransfer(_tokenOne, msg.sender, refund0);
         }
 
         if (amount1 < amount1ToMint) {
             TransferHelper.safeApprove(
-                USDC,
+                _tokenTwo,
                 address(NonfungiblePositionManager),
                 0
             );
             uint256 refund1 = amount1ToMint - amount1;
-            TransferHelper.safeTransfer(USDC, msg.sender, refund1);
+            TransferHelper.safeTransfer(_tokenTwo, msg.sender, refund1);
         }
         console.log("Pass 7");
         emit PositionMinted(tokenId, liquidity, amount0, amount1);

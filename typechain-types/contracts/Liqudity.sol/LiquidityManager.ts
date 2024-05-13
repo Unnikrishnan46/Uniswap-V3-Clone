@@ -3,29 +3,46 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumber,
   BigNumberish,
   BytesLike,
-  FunctionFragment,
-  Result,
-  Interface,
-  EventFragment,
-  AddressLike,
-  ContractRunner,
-  ContractMethod,
-  Listener,
+  CallOverrides,
+  ContractTransaction,
+  Overrides,
+  PopulatedTransaction,
+  Signer,
+  utils,
 } from "ethers";
 import type {
-  TypedContractEvent,
-  TypedDeferredTopicFilter,
-  TypedEventLog,
-  TypedLogDescription,
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
+import type { Listener, Provider } from "@ethersproject/providers";
+import type {
+  TypedEventFilter,
+  TypedEvent,
   TypedListener,
-  TypedContractMethod,
+  OnEvent,
+  PromiseOrValue,
 } from "../../common";
 
-export interface LiquidityManagerInterface extends Interface {
+export interface LiquidityManagerInterface extends utils.Interface {
+  functions: {
+    "DAI()": FunctionFragment;
+    "NonfungiblePositionManager()": FunctionFragment;
+    "USDC()": FunctionFragment;
+    "collectAllFees(uint256)": FunctionFragment;
+    "decreaseLiquidityInHalf(uint256)": FunctionFragment;
+    "deposits(uint256)": FunctionFragment;
+    "increaseLiquidityCurrentRange(uint256,uint256,uint256)": FunctionFragment;
+    "mintNewPosition(address,address,uint256,uint256,uint24)": FunctionFragment;
+    "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
+    "poolFee()": FunctionFragment;
+  };
+
   getFunction(
-    nameOrSignature:
+    nameOrSignatureOrTopic:
       | "DAI"
       | "NonfungiblePositionManager"
       | "USDC"
@@ -38,14 +55,6 @@ export interface LiquidityManagerInterface extends Interface {
       | "poolFee"
   ): FunctionFragment;
 
-  getEvent(
-    nameOrSignatureOrTopic:
-      | "FeesCollected"
-      | "LiquidityDecreasedByHalf"
-      | "LiquidityIncreased"
-      | "PositionMinted"
-  ): EventFragment;
-
   encodeFunctionData(functionFragment: "DAI", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "NonfungiblePositionManager",
@@ -54,27 +63,42 @@ export interface LiquidityManagerInterface extends Interface {
   encodeFunctionData(functionFragment: "USDC", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "collectAllFees",
-    values: [BigNumberish]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "decreaseLiquidityInHalf",
-    values: [BigNumberish]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "deposits",
-    values: [BigNumberish]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "increaseLiquidityCurrentRange",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    values: [
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "mintNewPosition",
-    values?: undefined
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "onERC721Received",
-    values: [AddressLike, AddressLike, BigNumberish, BytesLike]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>
+    ]
   ): string;
   encodeFunctionData(functionFragment: "poolFee", values?: undefined): string;
 
@@ -106,349 +130,416 @@ export interface LiquidityManagerInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "poolFee", data: BytesLike): Result;
+
+  events: {
+    "FeesCollected(uint256,uint256)": EventFragment;
+    "LiquidityDecreasedByHalf(uint256,uint256)": EventFragment;
+    "LiquidityIncreased(uint256,uint256,uint256)": EventFragment;
+    "PositionMinted(uint256,uint128,uint256,uint256)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "FeesCollected"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LiquidityDecreasedByHalf"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LiquidityIncreased"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "PositionMinted"): EventFragment;
 }
 
-export namespace FeesCollectedEvent {
-  export type InputTuple = [amount0: BigNumberish, amount1: BigNumberish];
-  export type OutputTuple = [amount0: bigint, amount1: bigint];
-  export interface OutputObject {
-    amount0: bigint;
-    amount1: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+export interface FeesCollectedEventObject {
+  amount0: BigNumber;
+  amount1: BigNumber;
 }
+export type FeesCollectedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  FeesCollectedEventObject
+>;
 
-export namespace LiquidityDecreasedByHalfEvent {
-  export type InputTuple = [amount0: BigNumberish, amount1: BigNumberish];
-  export type OutputTuple = [amount0: bigint, amount1: bigint];
-  export interface OutputObject {
-    amount0: bigint;
-    amount1: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
+export type FeesCollectedEventFilter = TypedEventFilter<FeesCollectedEvent>;
 
-export namespace LiquidityIncreasedEvent {
-  export type InputTuple = [
-    liquidity: BigNumberish,
-    amount0: BigNumberish,
-    amount1: BigNumberish
-  ];
-  export type OutputTuple = [
-    liquidity: bigint,
-    amount0: bigint,
-    amount1: bigint
-  ];
-  export interface OutputObject {
-    liquidity: bigint;
-    amount0: bigint;
-    amount1: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+export interface LiquidityDecreasedByHalfEventObject {
+  amount0: BigNumber;
+  amount1: BigNumber;
 }
+export type LiquidityDecreasedByHalfEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  LiquidityDecreasedByHalfEventObject
+>;
 
-export namespace PositionMintedEvent {
-  export type InputTuple = [
-    tokenId: BigNumberish,
-    liquidity: BigNumberish,
-    amount0: BigNumberish,
-    amount1: BigNumberish
-  ];
-  export type OutputTuple = [
-    tokenId: bigint,
-    liquidity: bigint,
-    amount0: bigint,
-    amount1: bigint
-  ];
-  export interface OutputObject {
-    tokenId: bigint;
-    liquidity: bigint;
-    amount0: bigint;
-    amount1: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
+export type LiquidityDecreasedByHalfEventFilter =
+  TypedEventFilter<LiquidityDecreasedByHalfEvent>;
+
+export interface LiquidityIncreasedEventObject {
+  liquidity: BigNumber;
+  amount0: BigNumber;
+  amount1: BigNumber;
 }
+export type LiquidityIncreasedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  LiquidityIncreasedEventObject
+>;
+
+export type LiquidityIncreasedEventFilter =
+  TypedEventFilter<LiquidityIncreasedEvent>;
+
+export interface PositionMintedEventObject {
+  tokenId: BigNumber;
+  liquidity: BigNumber;
+  amount0: BigNumber;
+  amount1: BigNumber;
+}
+export type PositionMintedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber, BigNumber],
+  PositionMintedEventObject
+>;
+
+export type PositionMintedEventFilter = TypedEventFilter<PositionMintedEvent>;
 
 export interface LiquidityManager extends BaseContract {
-  connect(runner?: ContractRunner | null): LiquidityManager;
-  waitForDeployment(): Promise<this>;
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
   interface: LiquidityManagerInterface;
 
-  queryFilter<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
+  queryFilter<TEvent extends TypedEvent>(
+    event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
-  queryFilter<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  ): Promise<Array<TEvent>>;
 
-  on<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  on<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
-  once<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  once<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  functions: {
+    DAI(overrides?: CallOverrides): Promise<[string]>;
 
-  listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
-  ): Promise<Array<TypedListener<TCEvent>>>;
-  listeners(eventName?: string): Promise<Array<Listener>>;
-  removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
-  ): Promise<this>;
+    NonfungiblePositionManager(overrides?: CallOverrides): Promise<[string]>;
 
-  DAI: TypedContractMethod<[], [string], "view">;
+    USDC(overrides?: CallOverrides): Promise<[string]>;
 
-  NonfungiblePositionManager: TypedContractMethod<[], [string], "view">;
+    collectAllFees(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-  USDC: TypedContractMethod<[], [string], "view">;
+    decreaseLiquidityInHalf(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-  collectAllFees: TypedContractMethod<
-    [tokenId: BigNumberish],
-    [[bigint, bigint] & { amount0: bigint; amount1: bigint }],
-    "nonpayable"
-  >;
-
-  decreaseLiquidityInHalf: TypedContractMethod<
-    [tokenId: BigNumberish],
-    [[bigint, bigint] & { amount0: bigint; amount1: bigint }],
-    "nonpayable"
-  >;
-
-  deposits: TypedContractMethod<
-    [arg0: BigNumberish],
-    [
-      [string, bigint, string, string] & {
+    deposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, BigNumber, string, string] & {
         owner: string;
-        liquidity: bigint;
+        liquidity: BigNumber;
         token0: string;
         token1: string;
       }
-    ],
-    "view"
+    >;
+
+    increaseLiquidityCurrentRange(
+      tokenId: PromiseOrValue<BigNumberish>,
+      amountAdd0: PromiseOrValue<BigNumberish>,
+      amountAdd1: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    mintNewPosition(
+      _tokenOne: PromiseOrValue<string>,
+      _tokenTwo: PromiseOrValue<string>,
+      amount0ToMint: PromiseOrValue<BigNumberish>,
+      amount1ToMint: PromiseOrValue<BigNumberish>,
+      _poolFee: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    onERC721Received(
+      operator: PromiseOrValue<string>,
+      from: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    poolFee(overrides?: CallOverrides): Promise<[number]>;
+  };
+
+  DAI(overrides?: CallOverrides): Promise<string>;
+
+  NonfungiblePositionManager(overrides?: CallOverrides): Promise<string>;
+
+  USDC(overrides?: CallOverrides): Promise<string>;
+
+  collectAllFees(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  decreaseLiquidityInHalf(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  deposits(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [string, BigNumber, string, string] & {
+      owner: string;
+      liquidity: BigNumber;
+      token0: string;
+      token1: string;
+    }
   >;
 
-  increaseLiquidityCurrentRange: TypedContractMethod<
-    [tokenId: BigNumberish, amountAdd0: BigNumberish, amountAdd1: BigNumberish],
-    [
-      [bigint, bigint, bigint] & {
-        liquidity: bigint;
-        amount0: bigint;
-        amount1: bigint;
-      }
-    ],
-    "nonpayable"
-  >;
+  increaseLiquidityCurrentRange(
+    tokenId: PromiseOrValue<BigNumberish>,
+    amountAdd0: PromiseOrValue<BigNumberish>,
+    amountAdd1: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
-  mintNewPosition: TypedContractMethod<
-    [],
-    [
-      [bigint, bigint, bigint, bigint] & {
-        tokenId: bigint;
-        liquidity: bigint;
-        amount0: bigint;
-        amount1: bigint;
-      }
-    ],
-    "nonpayable"
-  >;
+  mintNewPosition(
+    _tokenOne: PromiseOrValue<string>,
+    _tokenTwo: PromiseOrValue<string>,
+    amount0ToMint: PromiseOrValue<BigNumberish>,
+    amount1ToMint: PromiseOrValue<BigNumberish>,
+    _poolFee: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
-  onERC721Received: TypedContractMethod<
-    [
-      operator: AddressLike,
-      from: AddressLike,
-      tokenId: BigNumberish,
-      data: BytesLike
-    ],
-    [string],
-    "nonpayable"
-  >;
+  onERC721Received(
+    operator: PromiseOrValue<string>,
+    from: PromiseOrValue<string>,
+    tokenId: PromiseOrValue<BigNumberish>,
+    data: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
-  poolFee: TypedContractMethod<[], [bigint], "view">;
+  poolFee(overrides?: CallOverrides): Promise<number>;
 
-  getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
-  ): T;
+  callStatic: {
+    DAI(overrides?: CallOverrides): Promise<string>;
 
-  getFunction(
-    nameOrSignature: "DAI"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "NonfungiblePositionManager"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "USDC"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "collectAllFees"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish],
-    [[bigint, bigint] & { amount0: bigint; amount1: bigint }],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "decreaseLiquidityInHalf"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish],
-    [[bigint, bigint] & { amount0: bigint; amount1: bigint }],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "deposits"
-  ): TypedContractMethod<
-    [arg0: BigNumberish],
-    [
-      [string, bigint, string, string] & {
+    NonfungiblePositionManager(overrides?: CallOverrides): Promise<string>;
+
+    USDC(overrides?: CallOverrides): Promise<string>;
+
+    collectAllFees(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+    >;
+
+    decreaseLiquidityInHalf(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
+    >;
+
+    deposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [string, BigNumber, string, string] & {
         owner: string;
-        liquidity: bigint;
+        liquidity: BigNumber;
         token0: string;
         token1: string;
       }
-    ],
-    "view"
-  >;
-  getFunction(
-    nameOrSignature: "increaseLiquidityCurrentRange"
-  ): TypedContractMethod<
-    [tokenId: BigNumberish, amountAdd0: BigNumberish, amountAdd1: BigNumberish],
-    [
-      [bigint, bigint, bigint] & {
-        liquidity: bigint;
-        amount0: bigint;
-        amount1: bigint;
-      }
-    ],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "mintNewPosition"
-  ): TypedContractMethod<
-    [],
-    [
-      [bigint, bigint, bigint, bigint] & {
-        tokenId: bigint;
-        liquidity: bigint;
-        amount0: bigint;
-        amount1: bigint;
-      }
-    ],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "onERC721Received"
-  ): TypedContractMethod<
-    [
-      operator: AddressLike,
-      from: AddressLike,
-      tokenId: BigNumberish,
-      data: BytesLike
-    ],
-    [string],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "poolFee"
-  ): TypedContractMethod<[], [bigint], "view">;
+    >;
 
-  getEvent(
-    key: "FeesCollected"
-  ): TypedContractEvent<
-    FeesCollectedEvent.InputTuple,
-    FeesCollectedEvent.OutputTuple,
-    FeesCollectedEvent.OutputObject
-  >;
-  getEvent(
-    key: "LiquidityDecreasedByHalf"
-  ): TypedContractEvent<
-    LiquidityDecreasedByHalfEvent.InputTuple,
-    LiquidityDecreasedByHalfEvent.OutputTuple,
-    LiquidityDecreasedByHalfEvent.OutputObject
-  >;
-  getEvent(
-    key: "LiquidityIncreased"
-  ): TypedContractEvent<
-    LiquidityIncreasedEvent.InputTuple,
-    LiquidityIncreasedEvent.OutputTuple,
-    LiquidityIncreasedEvent.OutputObject
-  >;
-  getEvent(
-    key: "PositionMinted"
-  ): TypedContractEvent<
-    PositionMintedEvent.InputTuple,
-    PositionMintedEvent.OutputTuple,
-    PositionMintedEvent.OutputObject
-  >;
+    increaseLiquidityCurrentRange(
+      tokenId: PromiseOrValue<BigNumberish>,
+      amountAdd0: PromiseOrValue<BigNumberish>,
+      amountAdd1: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        liquidity: BigNumber;
+        amount0: BigNumber;
+        amount1: BigNumber;
+      }
+    >;
+
+    mintNewPosition(
+      _tokenOne: PromiseOrValue<string>,
+      _tokenTwo: PromiseOrValue<string>,
+      amount0ToMint: PromiseOrValue<BigNumberish>,
+      amount1ToMint: PromiseOrValue<BigNumberish>,
+      _poolFee: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+        tokenId: BigNumber;
+        liquidity: BigNumber;
+        amount0: BigNumber;
+        amount1: BigNumber;
+      }
+    >;
+
+    onERC721Received(
+      operator: PromiseOrValue<string>,
+      from: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    poolFee(overrides?: CallOverrides): Promise<number>;
+  };
 
   filters: {
-    "FeesCollected(uint256,uint256)": TypedContractEvent<
-      FeesCollectedEvent.InputTuple,
-      FeesCollectedEvent.OutputTuple,
-      FeesCollectedEvent.OutputObject
-    >;
-    FeesCollected: TypedContractEvent<
-      FeesCollectedEvent.InputTuple,
-      FeesCollectedEvent.OutputTuple,
-      FeesCollectedEvent.OutputObject
-    >;
+    "FeesCollected(uint256,uint256)"(
+      amount0?: null,
+      amount1?: null
+    ): FeesCollectedEventFilter;
+    FeesCollected(amount0?: null, amount1?: null): FeesCollectedEventFilter;
 
-    "LiquidityDecreasedByHalf(uint256,uint256)": TypedContractEvent<
-      LiquidityDecreasedByHalfEvent.InputTuple,
-      LiquidityDecreasedByHalfEvent.OutputTuple,
-      LiquidityDecreasedByHalfEvent.OutputObject
-    >;
-    LiquidityDecreasedByHalf: TypedContractEvent<
-      LiquidityDecreasedByHalfEvent.InputTuple,
-      LiquidityDecreasedByHalfEvent.OutputTuple,
-      LiquidityDecreasedByHalfEvent.OutputObject
-    >;
+    "LiquidityDecreasedByHalf(uint256,uint256)"(
+      amount0?: null,
+      amount1?: null
+    ): LiquidityDecreasedByHalfEventFilter;
+    LiquidityDecreasedByHalf(
+      amount0?: null,
+      amount1?: null
+    ): LiquidityDecreasedByHalfEventFilter;
 
-    "LiquidityIncreased(uint256,uint256,uint256)": TypedContractEvent<
-      LiquidityIncreasedEvent.InputTuple,
-      LiquidityIncreasedEvent.OutputTuple,
-      LiquidityIncreasedEvent.OutputObject
-    >;
-    LiquidityIncreased: TypedContractEvent<
-      LiquidityIncreasedEvent.InputTuple,
-      LiquidityIncreasedEvent.OutputTuple,
-      LiquidityIncreasedEvent.OutputObject
-    >;
+    "LiquidityIncreased(uint256,uint256,uint256)"(
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): LiquidityIncreasedEventFilter;
+    LiquidityIncreased(
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): LiquidityIncreasedEventFilter;
 
-    "PositionMinted(uint256,uint128,uint256,uint256)": TypedContractEvent<
-      PositionMintedEvent.InputTuple,
-      PositionMintedEvent.OutputTuple,
-      PositionMintedEvent.OutputObject
-    >;
-    PositionMinted: TypedContractEvent<
-      PositionMintedEvent.InputTuple,
-      PositionMintedEvent.OutputTuple,
-      PositionMintedEvent.OutputObject
-    >;
+    "PositionMinted(uint256,uint128,uint256,uint256)"(
+      tokenId?: null,
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): PositionMintedEventFilter;
+    PositionMinted(
+      tokenId?: null,
+      liquidity?: null,
+      amount0?: null,
+      amount1?: null
+    ): PositionMintedEventFilter;
+  };
+
+  estimateGas: {
+    DAI(overrides?: CallOverrides): Promise<BigNumber>;
+
+    NonfungiblePositionManager(overrides?: CallOverrides): Promise<BigNumber>;
+
+    USDC(overrides?: CallOverrides): Promise<BigNumber>;
+
+    collectAllFees(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    decreaseLiquidityInHalf(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    deposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    increaseLiquidityCurrentRange(
+      tokenId: PromiseOrValue<BigNumberish>,
+      amountAdd0: PromiseOrValue<BigNumberish>,
+      amountAdd1: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    mintNewPosition(
+      _tokenOne: PromiseOrValue<string>,
+      _tokenTwo: PromiseOrValue<string>,
+      amount0ToMint: PromiseOrValue<BigNumberish>,
+      amount1ToMint: PromiseOrValue<BigNumberish>,
+      _poolFee: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    onERC721Received(
+      operator: PromiseOrValue<string>,
+      from: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    poolFee(overrides?: CallOverrides): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    DAI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    NonfungiblePositionManager(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    USDC(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    collectAllFees(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    decreaseLiquidityInHalf(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    deposits(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    increaseLiquidityCurrentRange(
+      tokenId: PromiseOrValue<BigNumberish>,
+      amountAdd0: PromiseOrValue<BigNumberish>,
+      amountAdd1: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    mintNewPosition(
+      _tokenOne: PromiseOrValue<string>,
+      _tokenTwo: PromiseOrValue<string>,
+      amount0ToMint: PromiseOrValue<BigNumberish>,
+      amount1ToMint: PromiseOrValue<BigNumberish>,
+      _poolFee: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    onERC721Received(
+      operator: PromiseOrValue<string>,
+      from: PromiseOrValue<string>,
+      tokenId: PromiseOrValue<BigNumberish>,
+      data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    poolFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

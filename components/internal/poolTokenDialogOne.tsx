@@ -18,16 +18,13 @@ const PoolTokenDialogOne = () => {
 
   const dispatch = useDispatch();
   const dialogState = useSelector((state: any) => state.dialogState);
-  const poolState = useSelector((state: any) => state.poolState);
-  console.log(poolState?.selectedPoolTokenOneData);
-  
+  const poolState = useSelector((state: any) => state.poolState);  
 
   const handleOpenChange = () => {
     dispatch(setPoolTokenDialogOneOpen(false));
   };
 
   const handleSelectToken = (data: any) => {
-    console.log("handleSelectToken working");
     dispatch(setSelectedPoolTokenOneData(data));
     dispatch(setPoolTokenDialogOneOpen(false));
   };

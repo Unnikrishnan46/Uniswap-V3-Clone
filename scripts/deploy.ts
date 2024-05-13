@@ -3,10 +3,10 @@ import { ethers } from "hardhat";
 async function main() {
 
   // ERC20 BOO TOKEN
-  const BooToken = await ethers.getContractFactory("BooToken");
-  const booToken = await BooToken.deploy();
-  await booToken.waitForDeployment();
-  console.log(`BooToken deployed to ${booToken.target}`,);
+  // const BooToken = await ethers.getContractFactory("BooToken");
+  // const booToken = await BooToken.deploy();
+  // await booToken._deployed();
+  // console.log(`BooToken deployed to ${booToken.address}`,);
 
   // ERC20 LIFE TOKEN
   // const LifeToken = await ethers.getContractFactory("LifeToken");
@@ -15,10 +15,10 @@ async function main() {
   // console.log(`LifeToken deployed to ${lifeToken.target}`);
 
     // SingleSwapToken
-    const SingleSwapToken = await ethers.getContractFactory("SingleSwapToken");
+    const SingleSwapToken = await ethers.getContractFactory("TokenSwap");
     const singleSwapToken = await SingleSwapToken.deploy();
-    await singleSwapToken.waitForDeployment();
-    console.log(`singleSwapToken deployed to ${singleSwapToken.target}`,);
+    await singleSwapToken.deployed();
+    console.log(`singleSwapToken deployed to ${singleSwapToken.address}`,);
 
     // SwapMultiHop
     // const SwapMultiHop = await ethers.getContractFactory("SwapMultiHop");
@@ -27,16 +27,19 @@ async function main() {
     // console.log(`swapMultiHop deployed to ${swapMultiHop.target}`,);
 
     // LIQUDITY
-    const Liqudity = await ethers.getContractFactory("LiquidityExamples");
+    const Liqudity = await ethers.getContractFactory("LiquidityManager");
     const liqudity = await Liqudity.deploy();
-    await liqudity.waitForDeployment();
-    console.log(`liquidity deployed to ${liqudity.target}`,);
+    await liqudity.deployed();
+    console.log(`liquidity deployed to ${liqudity.address}`,);
+
+    // TOKEN TRANSFER
+    const TokenTransfer = await ethers.getContractFactory("TokenTransfer");
+    const tokenTransfer = await TokenTransfer.deploy();
+    await tokenTransfer.deployed();
+    console.log(`tokenTransfer deployed to ${tokenTransfer.address}`);
 }
 
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
-
-
-//0x31403b1e52051883f2Ce1B1b4C89f36034e1221D

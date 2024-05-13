@@ -7,6 +7,8 @@ import type * as erc20LifeSol from "./ERC20Life.sol";
 export type { erc20LifeSol };
 import type * as liquditySol from "./Liqudity.sol";
 export type { liquditySol };
+import type * as sendTokenSol from "./SendToken.sol";
+export type { sendTokenSol };
 import type * as swapTokenSol from "./SwapToken.sol";
 export type { swapTokenSol };
 import type * as interfaces from "./interfaces";

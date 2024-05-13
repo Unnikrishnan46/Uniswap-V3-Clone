@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SwapPage from "./swap";
 import { Settings } from "lucide-react";
+import SendTab from "./send";
 
 const MainContent = () => {
   return (
@@ -19,9 +20,11 @@ const MainContent = () => {
         <TabsContent value="swap">
           <SwapPage />
         </TabsContent>
-        <TabsContent value="limit">Change your password here.</TabsContent>
-        <TabsContent value="send">Change your password here.</TabsContent>
-        <TabsContent value="buy">Change your password here.</TabsContent>
+        <TabsContent value="limit">Coming soon....</TabsContent>
+        <TabsContent value="send">
+          <SendTab/>
+        </TabsContent>
+        <TabsContent value="buy">Coming soon....</TabsContent>
       </Tabs>
     </div>
   );

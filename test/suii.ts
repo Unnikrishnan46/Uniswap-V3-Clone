@@ -77,6 +77,8 @@ describe("LiquidityManager", function () {
     console.log("Pass 10 ");
     const receipt = await tx.wait();
     console.log("Pass 11",receipt);
+    const receipt2 = await ethers.provider.getTransactionReceipt(tx.hash);
+    console.log(receipt2)
     const events = receipt.events?.filter((x) => x.event == "PositionMinted");
     console.log("Pass 12 ",events);
     if (events !== undefined && events.length > 0) {

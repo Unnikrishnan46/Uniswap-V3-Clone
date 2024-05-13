@@ -1,21 +1,26 @@
-import { ArrowDown, ChevronDown } from "lucide-react";
+import { ArrowDown, CheckCircle, ChevronDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setPayTokenDialog,
   setRecieveTokenDialog,
 } from "@/lib/redux/dialogState";
-import { getTokenInBal, getTokenOutBal, singleSwapToken } from "@/utils/appFeatures";
+import {
+  getTokenInBal,
+  getTokenOutBal,
+  singleSwapToken,
+} from "@/utils/appFeatures";
 import { useEffect, useState } from "react";
 import { getSpotPrice } from "@/utils/swapUpdatePrice";
+import { toast } from "sonner";
 
 const SwapPage = () => {
   const dispatch = useDispatch();
   const swapState = useSelector((state: any) => state.swapState);
   const [amountIn, setAmountIn] = useState("");
-  const [tokenInBalance,setTokenInBalance] = useState("");
-  const [tokenOutBalance,setTokenOutBalance] = useState("");
-  const [spotPrice,setSpotPrice] = useState<any>(0);
+  const [tokenInBalance, setTokenInBalance] = useState("");
+  const [tokenOutBalance, setTokenOutBalance] = useState("");
+  const [spotPrice, setSpotPrice] = useState<any>(0);
 
   const handleOpenPaytoken = () => {
     dispatch(setPayTokenDialog(true));
@@ -25,28 +30,54 @@ const SwapPage = () => {
     dispatch(setRecieveTokenDialog(true));
   };
 
+  const handleShowDetails = (hash:any)=>{
+    window.open(`https://etherscan.io/tx/${hash}`);
+  }
+
   const handleSingleSwapToken = async () => {
     const tokenIn = swapState.selectedPayTokenData;
     const tokenOut = swapState.selectedRecieveTokenData;
-    await singleSwapToken(tokenIn, tokenOut, amountIn);
+
+    const promise = singleSwapToken(tokenIn, tokenOut, amountIn);
+
+    toast.promise(promise, {
+      loading: "Transaction in progress...",
+      success: (data) => {
+        setAmountIn("");
+        setSpotPrice(0);
+        getTokenBalance()
+        if(data.status){
+          return <div className="flex justify-between items-center w-full">
+            <div className="flex gap-2 items-center">
+            <CheckCircle/>
+            <p className="font-semibold ">Token swaped successfully</p>
+            </div>
+            <Button onClick={()=>{handleShowDetails(data.transaction.blockHash)}} className="py-0" variant="uniswap">More Details</Button>
+            </div>
+        }
+      },
+      error: "Error",
+    });
   };
 
-  const getTokenBalance = async()=>{
+  const getTokenBalance = async () => {
     const tokenInBal = await getTokenInBal(swapState?.selectedPayTokenData);
     setTokenInBalance(tokenInBal);
-    const tokenOutBal = await getTokenOutBal(swapState.selectedRecieveTokenData);
+    const tokenOutBal = await getTokenOutBal(
+      swapState.selectedRecieveTokenData
+    );
     setTokenOutBalance(tokenOutBal);
-  }
+  };
 
-  const handleInput = async(e)=>{  
-    setAmountIn(e.target.value);    
+  const handleInput = async (e) => {
+    setAmountIn(e.target.value);
     const tokenIn = swapState?.selectedPayTokenData;
     const tokenOut = swapState?.selectedRecieveTokenData;
-    if(tokenIn && tokenOut){
-      const price = await getSpotPrice(tokenIn,tokenOut,e.target.value);
+    if (tokenIn && tokenOut) {
+      const price = await getSpotPrice(tokenIn, tokenOut, e.target.value);
       setSpotPrice(price);
     }
-  }
+  };
 
   useEffect(() => {
     getTokenBalance();
@@ -61,13 +92,13 @@ const SwapPage = () => {
           </label>
           <input
             onChange={(e) => {
-              handleInput(e)
+              handleInput(e);
             }}
             value={amountIn}
             id="inputPrice"
             type="text"
             placeholder="0"
-            className="placeholder:text-gray-400 placeholder:text-3xl focus:outline-none text-3xl placeholder:font-semibold font-semibold bg-muted w-full"
+            className="placeholder:text-gray-400 placeholder:text-3xl focus:outline-none focus:bg-muted text-3xl placeholder:font-semibold font-semibold bg-muted w-full"
           />
         </div>
         <div className="flex flex-col gap-2 items-end">
@@ -86,19 +117,21 @@ const SwapPage = () => {
               <img className="h-5 w-5" src="/images/angleDown.svg" alt="" />
             </div>
           </Button>
-          <p className="text-gray-400 text-sm flex gap-1">Balance: <span>{tokenInBalance ? tokenInBalance : 0}</span></p>
+          <p className="text-gray-400 text-sm flex gap-1">
+            Balance: <span>{tokenInBalance ? tokenInBalance : 0}</span>
+          </p>
         </div>
       </div>
 
       <div className="w-full bg-muted rounded-2xl h-32 pt-4 pl-3 flex justify-between pr-3">
         <div className="flex flex-col">
-          <label className="text-gray-500 text-sm" htmlFor="inputPrice">
+          <label className="text-gray-500 text-sm" htmlFor="inputPric">
             You recieve
           </label>
           <input
             value={spotPrice ? spotPrice : ""}
             readOnly={true}
-            id="inputPrice"
+            id="inputPric"
             type="text"
             placeholder="0"
             className="placeholder:text-gray-400 placeholder:text-3xl focus:outline-none text-3xl placeholder:font-semibold font-semibold bg-muted w-full"
@@ -131,7 +164,11 @@ const SwapPage = () => {
               <ChevronDown />
             </Button>
           )}
-          {swapState?.selectedRecieveTokenData && (<p className="text-gray-400 text-sm flex gap-1">Balance: <span> {tokenOutBalance ? tokenOutBalance : 0}</span></p> )}
+          {swapState?.selectedRecieveTokenData && (
+            <p className="text-gray-400 text-sm flex gap-1">
+              Balance: <span> {tokenOutBalance ? tokenOutBalance : 0}</span>
+            </p>
+          )}
         </div>
       </div>
       {!swapState?.selectedRecieveTokenData && (

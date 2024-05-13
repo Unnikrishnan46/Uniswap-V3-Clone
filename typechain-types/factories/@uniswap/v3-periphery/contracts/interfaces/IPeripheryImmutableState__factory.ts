@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Interface, type ContractRunner } from "ethers";
+import { Contract, Signer, utils } from "ethers";
+import type { Provider } from "@ethersproject/providers";
 import type {
   IPeripheryImmutableState,
   IPeripheryImmutableStateInterface,
@@ -40,16 +41,16 @@ const _abi = [
 export class IPeripheryImmutableState__factory {
   static readonly abi = _abi;
   static createInterface(): IPeripheryImmutableStateInterface {
-    return new Interface(_abi) as IPeripheryImmutableStateInterface;
+    return new utils.Interface(_abi) as IPeripheryImmutableStateInterface;
   }
   static connect(
     address: string,
-    runner?: ContractRunner | null
+    signerOrProvider: Signer | Provider
   ): IPeripheryImmutableState {
     return new Contract(
       address,
       _abi,
-      runner
-    ) as unknown as IPeripheryImmutableState;
+      signerOrProvider
+    ) as IPeripheryImmutableState;
   }
 }

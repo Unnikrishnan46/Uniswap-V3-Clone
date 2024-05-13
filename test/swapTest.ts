@@ -28,8 +28,9 @@ describe("SingleSwapToken",()=>{
     const amountIn = BigInt("1000000000000000000");
     await weth.deposit({value:amountIn});
     await weth.approve(singleSwapToken.getAddress(),amountIn);
-    await singleSwapToken.swapExactInputSingle(WETH9,DAI,amountIn);
-    console.log("Dai balance : ",await dai.balanceOf(accounts[0].address));
+    await singleSwapToken.swapExactInputSingle(WETH9,USDC,amountIn);
+    console.log("DAI balance : ",await dai.balanceOf(accounts[0].address));
+    console.log("USDC balance : ",await usdc.balanceOf(accounts[0].address));
   });
 
   // it("swapExactInputMultihop",async()=>{

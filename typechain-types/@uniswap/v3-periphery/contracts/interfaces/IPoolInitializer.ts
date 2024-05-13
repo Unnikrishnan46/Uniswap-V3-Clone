@@ -3,110 +3,126 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumber,
   BigNumberish,
   BytesLike,
-  FunctionFragment,
-  Result,
-  Interface,
-  AddressLike,
-  ContractRunner,
-  ContractMethod,
-  Listener,
+  CallOverrides,
+  ContractTransaction,
+  PayableOverrides,
+  PopulatedTransaction,
+  Signer,
+  utils,
 } from "ethers";
+import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedContractEvent,
-  TypedDeferredTopicFilter,
-  TypedEventLog,
+  TypedEventFilter,
+  TypedEvent,
   TypedListener,
-  TypedContractMethod,
+  OnEvent,
+  PromiseOrValue,
 } from "../../../../common";
 
-export interface IPoolInitializerInterface extends Interface {
+export interface IPoolInitializerInterface extends utils.Interface {
+  functions: {
+    "createAndInitializePoolIfNecessary(address,address,uint24,uint160)": FunctionFragment;
+  };
+
   getFunction(
-    nameOrSignature: "createAndInitializePoolIfNecessary"
+    nameOrSignatureOrTopic: "createAndInitializePoolIfNecessary"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createAndInitializePoolIfNecessary",
-    values: [AddressLike, AddressLike, BigNumberish, BigNumberish]
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
 
   decodeFunctionResult(
     functionFragment: "createAndInitializePoolIfNecessary",
     data: BytesLike
   ): Result;
+
+  events: {};
 }
 
 export interface IPoolInitializer extends BaseContract {
-  connect(runner?: ContractRunner | null): IPoolInitializer;
-  waitForDeployment(): Promise<this>;
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
   interface: IPoolInitializerInterface;
 
-  queryFilter<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
+  queryFilter<TEvent extends TypedEvent>(
+    event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
-  queryFilter<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  ): Promise<Array<TEvent>>;
 
-  on<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  on<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
-  once<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  once<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  functions: {
+    createAndInitializePoolIfNecessary(
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      fee: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+  };
 
-  listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
-  ): Promise<Array<TypedListener<TCEvent>>>;
-  listeners(eventName?: string): Promise<Array<Listener>>;
-  removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
-  ): Promise<this>;
+  createAndInitializePoolIfNecessary(
+    token0: PromiseOrValue<string>,
+    token1: PromiseOrValue<string>,
+    fee: PromiseOrValue<BigNumberish>,
+    sqrtPriceX96: PromiseOrValue<BigNumberish>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
-  createAndInitializePoolIfNecessary: TypedContractMethod<
-    [
-      token0: AddressLike,
-      token1: AddressLike,
-      fee: BigNumberish,
-      sqrtPriceX96: BigNumberish
-    ],
-    [string],
-    "payable"
-  >;
-
-  getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
-  ): T;
-
-  getFunction(
-    nameOrSignature: "createAndInitializePoolIfNecessary"
-  ): TypedContractMethod<
-    [
-      token0: AddressLike,
-      token1: AddressLike,
-      fee: BigNumberish,
-      sqrtPriceX96: BigNumberish
-    ],
-    [string],
-    "payable"
-  >;
+  callStatic: {
+    createAndInitializePoolIfNecessary(
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      fee: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+  };
 
   filters: {};
+
+  estimateGas: {
+    createAndInitializePoolIfNecessary(
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      fee: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    createAndInitializePoolIfNecessary(
+      token0: PromiseOrValue<string>,
+      token1: PromiseOrValue<string>,
+      fee: PromiseOrValue<BigNumberish>,
+      sqrtPriceX96: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+  };
 }

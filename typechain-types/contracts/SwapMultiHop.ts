@@ -3,26 +3,39 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumber,
   BigNumberish,
   BytesLike,
-  FunctionFragment,
-  Result,
-  Interface,
-  ContractRunner,
-  ContractMethod,
-  Listener,
+  CallOverrides,
+  ContractTransaction,
+  Overrides,
+  PopulatedTransaction,
+  Signer,
+  utils,
 } from "ethers";
+import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type { Listener, Provider } from "@ethersproject/providers";
 import type {
-  TypedContractEvent,
-  TypedDeferredTopicFilter,
-  TypedEventLog,
+  TypedEventFilter,
+  TypedEvent,
   TypedListener,
-  TypedContractMethod,
+  OnEvent,
+  PromiseOrValue,
 } from "../common";
 
-export interface SwapMultiHopInterface extends Interface {
+export interface SwapMultiHopInterface extends utils.Interface {
+  functions: {
+    "DAI()": FunctionFragment;
+    "USDC()": FunctionFragment;
+    "WETH9()": FunctionFragment;
+    "poolFee()": FunctionFragment;
+    "swapExactInputMultihop(uint256)": FunctionFragment;
+    "swapExactOutputMultihop(uint256,uint256)": FunctionFragment;
+    "swapRouter()": FunctionFragment;
+  };
+
   getFunction(
-    nameOrSignature:
+    nameOrSignatureOrTopic:
       | "DAI"
       | "USDC"
       | "WETH9"
@@ -38,11 +51,11 @@ export interface SwapMultiHopInterface extends Interface {
   encodeFunctionData(functionFragment: "poolFee", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "swapExactInputMultihop",
-    values: [BigNumberish]
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "swapExactOutputMultihop",
-    values: [BigNumberish, BigNumberish]
+    values: [PromiseOrValue<BigNumberish>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "swapRouter",
@@ -62,102 +75,148 @@ export interface SwapMultiHopInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "swapRouter", data: BytesLike): Result;
+
+  events: {};
 }
 
 export interface SwapMultiHop extends BaseContract {
-  connect(runner?: ContractRunner | null): SwapMultiHop;
-  waitForDeployment(): Promise<this>;
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
   interface: SwapMultiHopInterface;
 
-  queryFilter<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
+  queryFilter<TEvent extends TypedEvent>(
+    event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
-  queryFilter<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    fromBlockOrBlockhash?: string | number | undefined,
-    toBlock?: string | number | undefined
-  ): Promise<Array<TypedEventLog<TCEvent>>>;
+  ): Promise<Array<TEvent>>;
 
-  on<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  on<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  listeners<TEvent extends TypedEvent>(
+    eventFilter?: TypedEventFilter<TEvent>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
+  removeAllListeners<TEvent extends TypedEvent>(
+    eventFilter: TypedEventFilter<TEvent>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
-  once<TCEvent extends TypedContractEvent>(
-    event: TCEvent,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
-  once<TCEvent extends TypedContractEvent>(
-    filter: TypedDeferredTopicFilter<TCEvent>,
-    listener: TypedListener<TCEvent>
-  ): Promise<this>;
+  functions: {
+    DAI(overrides?: CallOverrides): Promise<[string]>;
 
-  listeners<TCEvent extends TypedContractEvent>(
-    event: TCEvent
-  ): Promise<Array<TypedListener<TCEvent>>>;
-  listeners(eventName?: string): Promise<Array<Listener>>;
-  removeAllListeners<TCEvent extends TypedContractEvent>(
-    event?: TCEvent
-  ): Promise<this>;
+    USDC(overrides?: CallOverrides): Promise<[string]>;
 
-  DAI: TypedContractMethod<[], [string], "view">;
+    WETH9(overrides?: CallOverrides): Promise<[string]>;
 
-  USDC: TypedContractMethod<[], [string], "view">;
+    poolFee(overrides?: CallOverrides): Promise<[number]>;
 
-  WETH9: TypedContractMethod<[], [string], "view">;
+    swapExactInputMultihop(
+      amountIn: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-  poolFee: TypedContractMethod<[], [bigint], "view">;
+    swapExactOutputMultihop(
+      amountOut: PromiseOrValue<BigNumberish>,
+      amountInMaximum: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
-  swapExactInputMultihop: TypedContractMethod<
-    [amountIn: BigNumberish],
-    [bigint],
-    "nonpayable"
-  >;
+    swapRouter(overrides?: CallOverrides): Promise<[string]>;
+  };
 
-  swapExactOutputMultihop: TypedContractMethod<
-    [amountOut: BigNumberish, amountInMaximum: BigNumberish],
-    [bigint],
-    "nonpayable"
-  >;
+  DAI(overrides?: CallOverrides): Promise<string>;
 
-  swapRouter: TypedContractMethod<[], [string], "view">;
+  USDC(overrides?: CallOverrides): Promise<string>;
 
-  getFunction<T extends ContractMethod = ContractMethod>(
-    key: string | FunctionFragment
-  ): T;
+  WETH9(overrides?: CallOverrides): Promise<string>;
 
-  getFunction(
-    nameOrSignature: "DAI"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "USDC"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "WETH9"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "poolFee"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "swapExactInputMultihop"
-  ): TypedContractMethod<[amountIn: BigNumberish], [bigint], "nonpayable">;
-  getFunction(
-    nameOrSignature: "swapExactOutputMultihop"
-  ): TypedContractMethod<
-    [amountOut: BigNumberish, amountInMaximum: BigNumberish],
-    [bigint],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "swapRouter"
-  ): TypedContractMethod<[], [string], "view">;
+  poolFee(overrides?: CallOverrides): Promise<number>;
+
+  swapExactInputMultihop(
+    amountIn: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  swapExactOutputMultihop(
+    amountOut: PromiseOrValue<BigNumberish>,
+    amountInMaximum: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  swapRouter(overrides?: CallOverrides): Promise<string>;
+
+  callStatic: {
+    DAI(overrides?: CallOverrides): Promise<string>;
+
+    USDC(overrides?: CallOverrides): Promise<string>;
+
+    WETH9(overrides?: CallOverrides): Promise<string>;
+
+    poolFee(overrides?: CallOverrides): Promise<number>;
+
+    swapExactInputMultihop(
+      amountIn: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    swapExactOutputMultihop(
+      amountOut: PromiseOrValue<BigNumberish>,
+      amountInMaximum: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    swapRouter(overrides?: CallOverrides): Promise<string>;
+  };
 
   filters: {};
+
+  estimateGas: {
+    DAI(overrides?: CallOverrides): Promise<BigNumber>;
+
+    USDC(overrides?: CallOverrides): Promise<BigNumber>;
+
+    WETH9(overrides?: CallOverrides): Promise<BigNumber>;
+
+    poolFee(overrides?: CallOverrides): Promise<BigNumber>;
+
+    swapExactInputMultihop(
+      amountIn: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    swapExactOutputMultihop(
+      amountOut: PromiseOrValue<BigNumberish>,
+      amountInMaximum: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    swapRouter(overrides?: CallOverrides): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    DAI(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    USDC(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    WETH9(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    poolFee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    swapExactInputMultihop(
+      amountIn: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    swapExactOutputMultihop(
+      amountOut: PromiseOrValue<BigNumberish>,
+      amountInMaximum: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    swapRouter(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+  };
 }

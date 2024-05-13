@@ -19,7 +19,7 @@ import {
   setWalletAddress,
   setWalletBalance,
 } from "@/lib/redux/walletState";
-import { checkMetaMaskConnection, connectMetamask, connectToArbitrumMainnet, connectToAvalancheMainnet, connectToBNBMainnet, connectToBaseMainnet, connectToCeloMainnet, connectToEthereumMainnet, connectToOptimismMainnet, connectToPolygonMainnet, handleChainChanged } from "@/context/metamask";
+import { checkMetaMaskConnection, connectMetamask, handleChainChanged } from "@/context/metamask";
 import { useEffect } from "react";
 import { MetaMaskAvatar } from "react-metamask-avatar";
 import { useRouter } from "next/navigation";
@@ -105,6 +105,7 @@ const Navbar = () => {
         dispatch(setRecieveTokenData(contractAddress.mainnet));
         // dispatch(setSelectedRecieveTokenData(contractAddress.mainnet))
       }
+      
     } catch (error) {
       console.log(error);
     }
@@ -139,61 +140,61 @@ const Navbar = () => {
     return { fullAddress: fullAddress, shortAddress: shortAddress };
   };
 
-  const handleChainChange = (value) => {
-    dispatch(setSelectedChain(value));
-    if(value === "Ethereum"){
-      connectToEthereumMainnet();
-    }
-    if(value === "Polygon"){
-      connectToPolygonMainnet();
-    }
-    if(value === "Arbitrum"){
-      connectToArbitrumMainnet();
-    }
-    if(value === "Optimism"){
-      connectToOptimismMainnet();
-    }
-    if(value === "Base"){
-      connectToBaseMainnet();
-    }
-    if(value === "BNB Chain"){
-      connectToBNBMainnet();
-    }
-    if(value === "Avalanche"){
-      connectToAvalancheMainnet();
-    }
-    if(value === "Celo"){
-      connectToCeloMainnet();
-    }
-  };
+  // const handleChainChange = (value) => {
+  //   dispatch(setSelectedChain(value));
+  //   if(value === "Ethereum"){
+  //     connectToEthereumMainnet();
+  //   }
+  //   if(value === "Polygon"){
+  //     connectToPolygonMainnet();
+  //   }
+  //   if(value === "Arbitrum"){
+  //     connectToArbitrumMainnet();
+  //   }
+  //   if(value === "Optimism"){
+  //     connectToOptimismMainnet();
+  //   }
+  //   if(value === "Base"){
+  //     connectToBaseMainnet();
+  //   }
+  //   if(value === "BNB Chain"){
+  //     connectToBNBMainnet();
+  //   }
+  //   if(value === "Avalanche"){
+  //     connectToAvalancheMainnet();
+  //   }
+  //   if(value === "Celo"){
+  //     connectToCeloMainnet();
+  //   }
+  // };
 
 
-  (window as any).ethereum.on("chainChanged", async(chainId)=>{
-    try {
-      const data = await handleChainChanged(chainId);
-      dispatch(setWalletAddress(data.address));
-      dispatch(setIsLoggedIn(data.loggedIn));
-      dispatch(setWalletBalance(data.balance));
-      dispatch(setCurrentChain(data.network));
-      if(data.network === "matic"){
-        dispatch(setSelectedChain("Polygon"));
-      }
-      if(data.network === "mainnet"){
-        dispatch(setSelectedChain("Ethereum"));
-      }
-      if(data.network === "arbitrum"){
-        dispatch(setSelectedChain("Arbitrum"));
-      }
-      if(data.network === "base"){
-        dispatch(setSelectedChain("Base"));
-      }
-      if(data.network === "bnb"){
-        dispatch(setSelectedChain("BNB Chain"));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  });
+  // (window as any).ethereum.on("chainChanged", async(chainId)=>{
+  //   try {
+  //     const data = await handleChainChanged(chainId);
+  //     dispatch(setWalletAddress(data.address));
+  //     dispatch(setIsLoggedIn(data.loggedIn));
+  //     dispatch(setWalletBalance(data.balance));
+  //     dispatch(setCurrentChain(data.network));
+  //     if(data.network === "matic"){
+  //       dispatch(setSelectedChain("Polygon"));
+  //     }
+  //     if(data.network === "mainnet"){
+  //       dispatch(setSelectedChain("Ethereum"));
+  //     }
+  //     if(data.network === "arbitrum"){
+  //       dispatch(setSelectedChain("Arbitrum"));
+  //     }
+  //     if(data.network === "base"){
+  //       dispatch(setSelectedChain("Base"));
+  //     }
+  //     if(data.network === "bnb"){
+  //       dispatch(setSelectedChain("BNB Chain"));
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // });
 
 
 
@@ -235,7 +236,7 @@ const Navbar = () => {
         <Select
         value={walletState.selectedChain}
           onValueChange={(value) => {
-            handleChainChange(value);
+            // handleChainChange(value);
           }}
         >
           <SelectTrigger className="border-none">

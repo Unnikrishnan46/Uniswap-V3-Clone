@@ -5,10 +5,11 @@ export const privateKey2 =
 
 import booToken from "./BooToken.json";
 import lifeToken from "./LifeToken.json";
-import singleSwapToken from "./SingleSwapToken.json";
+import singleSwapToken from "./TokenSwap.json";
 import swapMultiHop from "./SwapMultiHop.json";
 import IWETH from "./IWETH.json";
-import ERC20 from "./ERC20.json"
+import ERC20 from "./ERC20.json";
+import transferToken from "./TokenTransfer.json"
 
 export const ERC2 = ERC20;
 
@@ -22,8 +23,16 @@ export const LifeTokenABI = lifeToken.abi;
 
 // SINGLESWAPTOKEN
 export const SingleSwapTokenAddress =
-  "0x499AA73A1D27e54B33E7DB05ffd22854EC70257E";
+  "0x3Af511B1bdD6A0377e23796aD6B7391d8De68636";
 export const singleSwapTokenABI = singleSwapToken.abi;
+
+
+// LIQUIDITY CONTRACT
+export const liquidityContractAddress = "0x10537D7bD661C9c34F547b38EC662D6FD482Ae95";
+
+// TRANSFER CONTRACT
+export const transferContractAddress = "0xBD2fe040D03EB1d1E5A151fbcc19A03333223019";
+export const transferContractABI = transferToken.abi
 
 // SWAPMULTIHOP
 export const SwapMultiHopAddress = "0xEC7cb8C3EBE77BA6d284F13296bb1372A8522c5F";
@@ -35,7 +44,7 @@ export const IWETHABI = IWETH.abi;
 
 // DAI
 export const DAIAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
-
+export const USDCAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 
 
 // BooToken deployed to 0x24EcC5E6EaA700368B8FAC259d3fBD045f695A08
