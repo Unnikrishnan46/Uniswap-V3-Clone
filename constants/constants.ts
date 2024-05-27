@@ -23,15 +23,15 @@ export const LifeTokenABI = lifeToken.abi;
 
 // SINGLESWAPTOKEN
 export const SingleSwapTokenAddress =
-  "0x3Af511B1bdD6A0377e23796aD6B7391d8De68636";
+  "0x82A9286dB983093Ff234cefCea1d8fA66382876B";
 export const singleSwapTokenABI = singleSwapToken.abi;
 
 
 // LIQUIDITY CONTRACT
-export const liquidityContractAddress = "0x10537D7bD661C9c34F547b38EC662D6FD482Ae95";
+export const liquidityContractAddress = "0x41219a0a9C0b86ED81933c788a6B63Dfef8f17eE";
 
 // TRANSFER CONTRACT
-export const transferContractAddress = "0xBD2fe040D03EB1d1E5A151fbcc19A03333223019";
+export const transferContractAddress = "0x1d460d731Bd5a0fF2cA07309dAEB8641a7b175A1";
 export const transferContractABI = transferToken.abi
 
 // SWAPMULTIHOP

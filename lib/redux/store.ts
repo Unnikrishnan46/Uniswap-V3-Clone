@@ -4,6 +4,7 @@ import dialogState from './dialogState';
 import swapState from './swapState';
 import poolState from "./poolState";
 import sendTokenState from './sendTokenState';
+import hamburgerMenuState from './hamburgerMenuState';
 
 export const store = configureStore({
   reducer:{
@@ -11,7 +12,8 @@ export const store = configureStore({
     dialogState:dialogState,
     swapState:swapState,
     poolState:poolState,
-    sendTokenState:sendTokenState
+    sendTokenState:sendTokenState,
+    hamburgerState:hamburgerMenuState
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

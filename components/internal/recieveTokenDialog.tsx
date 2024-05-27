@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  setPayTokenDialog,
   setRecieveTokenDialog,
 } from "@/lib/redux/dialogState";
 import { Search } from "lucide-react";
@@ -15,7 +14,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button } from "../ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  setSelectedPayTokenData,
   setSelectedRecieveTokenData,
 } from "@/lib/redux/swapState";
 
@@ -86,7 +84,7 @@ const RecieveTokenDialog = () => {
             <h1 className="text-gray-500">Popular tokens</h1>
           </div>
         </div>
-        <div className="flex flex-col mb-8">
+        <div className="flex flex-col mb-8 overflow-y-scroll h-[20rem]">
           {swapState?.recieveTokenData?.map((item, index) => (
             <div
               onClick={() => {

@@ -1,9 +1,8 @@
-import { imagePaths } from "@/constants/imagePaths";
 import { ArrowRightLeft, CheckCircle, ChevronDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { setSendTokenDialogOpen } from "@/lib/redux/dialogState";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { connectMetamask } from "@/context/metamask";
 import { setCurrentChain, setIsLoggedIn, setSelectedChain, setWalletAddress, setWalletBalance } from "@/lib/redux/walletState";
 import { setPayTokenData, setRecieveTokenData, setSelectedPayTokenData } from "@/lib/redux/swapState";
@@ -93,7 +92,7 @@ const SendTab = () => {
               return <div className="flex justify-between items-center w-full">
                 <div className="flex gap-2 items-center">
                 <CheckCircle/>
-                <p className="font-semibold ">Token swaped successfully</p>
+                <p className="font-semibold ">Token sended successfully</p>
                 </div>
                 <Button onClick={()=>{handleShowDetails(data.transactionData.blockHash)}} className="py-0" variant="uniswap">More Details</Button>
                 </div>
@@ -123,7 +122,7 @@ const SendTab = () => {
       <div className="flex flex-col gap-1">
         <div className="flex flex-col bg-[#f9f9f9] rounded-2xl p-4">
           <div>
-            <p className="text-gray-400 font-light">you're sending</p>
+            <p className="text-gray-400 font-light">you are sending</p>
           </div>
           <div className="flex flex-col gap-1 justify-center items-center p-8 px-0">
             <input

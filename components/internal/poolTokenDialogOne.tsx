@@ -82,7 +82,7 @@ const PoolTokenDialogOne = () => {
             <h1 className="text-gray-500">Popular tokens</h1>
           </div>
         </div>
-        <div className="flex flex-col mb-8">
+        <div className="flex flex-col mb-8 overflow-y-scroll h-[20rem]">
           {contractAddress.mainnet?.map((item, index) => (
             <div
               onClick={() => {

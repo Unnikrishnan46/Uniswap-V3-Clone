@@ -14,11 +14,9 @@ describe("SingleSwapToken",()=>{
 
   before(async()=>{
     accounts = await ethers.getSigners()
-    const SingleSwapToken = await ethers.getContractFactory("SingleSwapToken");
+    const SingleSwapToken = await ethers.getContractFactory("TokenSwap");
     singleSwapToken = await SingleSwapToken.deploy();
-    const BooToken = await ethers.getContractFactory("BooToken");
-    const booToken = await BooToken.deploy();
-    await singleSwapToken.waitForDeployment();
+    // await singleSwapToken.waitForDeployment();
     weth = await ethers.getContractAt("IWETH",WETH9);
     dai = await ethers.getContractAt("IERC20",DAI);
     usdc = await ethers.getContractAt("IERC20",USDC);
@@ -27,7 +25,7 @@ describe("SingleSwapToken",()=>{
   it("swapExactInputSingle",async()=>{
     const amountIn = BigInt("1000000000000000000");
     await weth.deposit({value:amountIn});
-    await weth.approve(singleSwapToken.getAddress(),amountIn);
+    await weth.approve(singleSwapToken.address,amountIn);
     await singleSwapToken.swapExactInputSingle(WETH9,USDC,amountIn);
     console.log("DAI balance : ",await dai.balanceOf(accounts[0].address));
     console.log("USDC balance : ",await usdc.balanceOf(accounts[0].address));

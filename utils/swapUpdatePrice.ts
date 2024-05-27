@@ -22,6 +22,6 @@ export const getSpotPrice = async (tokenInData, tokenOutData, amountIn) => {
       amounts[1].toString(),
       tokenOutData.decimal
     );
-    return parseFloat(price).toFixed(2);
+    return parseFloat(price).toFixed(5);
   }
 };

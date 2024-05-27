@@ -9,6 +9,7 @@ import {
   setPoolTokenDialogOneOpen,
   setPoolTokenDialogZeroOpen,
 } from "@/lib/redux/dialogState";
+import { setSelectedPoolTokenOneData, setSelectedPoolTokenZeroData } from "@/lib/redux/poolState";
 import {
   setPayTokenData,
   setRecieveTokenData,
@@ -60,12 +61,13 @@ const AddPage = () => {
   const poolState = useSelector((state: any) => state.poolState);
   const walletState = useSelector((state: any) => state.walletState);
   const [selectedPercentage, setSelectedPercentage] = useState<any>(feeDataArray[0]);
-  const [lowPrice, setLowPrice] = useState("");
-  const [highPrice, setHighPrice] = useState("");
+  const [lowPrice, setLowPrice] = useState<any>("");
+  const [highPrice, setHighPrice] = useState<any>("");
   const [currentPriceOfoneToken, setCurrentPriceOfoneToken] = useState("");
   const [buttonStatus, setButtonStatus] = useState("");
   const [token0AmountToDeposit, setToken0AmountToDeposit] = useState("");
-  const [token1AmountToDeposit, setToken1AmountToDeposit] = useState("");
+  const [token1AmountToDeposit, setToken1AmountToDeposit] = useState<any>("");
+  const [isLoading,setIsLoading] = useState(false);
 
   const handleOpenPoolDialogZero = () => {
     dispatch(setPoolTokenDialogZeroOpen(true));
@@ -80,7 +82,9 @@ const AddPage = () => {
   };
 
   const getCurrentPriceOfToken = async () => {
-    if (
+    setIsLoading(true);
+    try {
+      if (
       poolState?.selectedPoolTokenZeroData &&
       poolState?.selectedPoolTokenOneData
     ) {
@@ -89,9 +93,16 @@ const AddPage = () => {
       const currentPrice = await getSpotPrice(tokenInData, tokenOutData, 1);
       setCurrentPriceOfoneToken(currentPrice);
     }
+    } catch (error) {
+      
+    }finally{
+      setIsLoading(false);
+    }
+    
   };
 
-  const handleAmountInput = async (e) => {
+  const handleAmountOneInput = async (e) => {
+    setIsLoading(true);
     try {
       if (
         poolState?.selectedPoolTokenZeroData &&
@@ -108,32 +119,34 @@ const AddPage = () => {
         setToken1AmountToDeposit(currentPrice);
         const token0Bal = await getTokenInBal(tokenInData);
         const token1Bal = await getTokenOutBal(tokenOutData);
-        console.log(token1Bal);
-        
+
         if (!e.target.value) {
           setToken1AmountToDeposit("");
           setButtonStatus("");
         }
         if (e.target.value > Math.floor(parseInt(token0Bal))) {
-          console.log("condition 1");
           setButtonStatus(`Insuficiant ${tokenInData.symbol} balance`);
           return ;
         }else if(e.target.value < Math.floor(parseInt(token0Bal))){
           setButtonStatus("");
         }
-        if (parseInt(currentPrice) > Math.floor(parseInt(token1Bal))) {
+        if (parseInt(currentPrice.toString()) > Math.floor(parseInt(token1Bal))) {
           setButtonStatus(`Insuficiant ${tokenOutData.symbol} balance`);
           return ;
-        }else if(currentPrice < token1Bal){
+        }else if(currentPrice.toString() < token1Bal){
           setButtonStatus("");
         }
       }
     } catch (error) {
       console.log(error);
+    }finally{
+      setIsLoading(false);
     }
   };
 
+
   const connect = async () => {
+    setIsLoading(true);
     try {
       const data = await connectMetamask();
       dispatch(setWalletAddress(data.address));
@@ -174,10 +187,13 @@ const AddPage = () => {
       }
     } catch (error) {
       console.log(error);
+    }finally{
+      setIsLoading(false);
     }
   };
 
   const handleAddPosition = async () => {
+    setIsLoading(true);
     try {
       if (
         poolState?.selectedPoolTokenZeroData &&
@@ -194,12 +210,14 @@ const AddPage = () => {
           token1Data,
           amount0ToMint,
           amount1ToMint,
-          poolFee
+          poolFee,
+          lowPrice,
+          highPrice
         );
         toast.promise(promise, {
           loading: "Transaction in progress...",
           success: (data:any) => {
-            console.log(data);
+            if(data.status === "Success"){
             setToken0AmountToDeposit("");
             setToken1AmountToDeposit("");
             dispatch(setLiquiditySuccessOpen(true));
@@ -210,21 +228,40 @@ const AddPage = () => {
                 <CheckCircle/>
                 <p className="font-semibold ">Position created successfully</p>
                 </div>
-                <Button onClick={()=>{handleShowDetails(data.blockHash)}} className="py-0" variant="uniswap">More Details</Button>
+                <Button onClick={()=>{handleShowDetails(data.receipt.blockHash)}} className="py-0" variant="uniswap">More Details</Button>
                 </div>
             }
-
+          }
           },
-          error: "Error",
+          error: (error:any)=>{
+            if(error.status === "fail"){
+              return toast.warning(error.error);
+            }
+          },
         });
       }
     } catch (error) {
       console.log(error);
+    }finally{
+      setIsLoading(false);
     }
   };
 
   const handleShowDetails = (hash:any)=>{
     window.open(`https://etherscan.io/tx/${hash}`);
+  }
+
+
+  const handleClearAll = ()=>{
+    setLowPrice("");
+    setHighPrice("");
+    setCurrentPriceOfoneToken("");
+    setButtonStatus("");
+    setToken0AmountToDeposit("");
+    setToken1AmountToDeposit("");
+    setSelectedPercentage(feeDataArray[0]);
+    dispatch(setSelectedPoolTokenZeroData(contractAddress.mainnet[0]));
+    dispatch(setSelectedPoolTokenOneData(null));
   }
 
   useEffect(() => {
@@ -234,16 +271,19 @@ const AddPage = () => {
     poolState?.selectedPoolTokenOneData,
   ]);
 
+
+
   return (
     <div className="flex flex-col justify-center items-center">
-      <div className="flex flex-col gap-2 w-[45%] border rounded-xl px-5 mt-10 mb-10">
-        <div className="flex justify-between w-full p-3 items-center">
-          <ArrowLeft />
-          <h1 className="text-xl font-medium">Add liquidity</h1>
-          <div className="flex gap-2 items-center">
-            <Button variant="ghost" className="text-[#fc72ff]">
+      <div className="flex flex-col gap-2 w-[45%] border rounded-xl px-5 mt-10 mb-10 max-lg:w-[65%] max-md:w-[75%] max-sm:w-[95%]">
+        <div className="flex justify-between w-full p-3 items-center max-md:justify-start">
+          <ArrowLeft /> 
+          <h1 className="text-xl font-medium w-full">Add liquidity</h1>
+          <div className="flex gap-2 items-center max-md:justify-end">
+            <Button onClick={handleClearAll} variant="ghost" className="text-[#fc72ff] max-md:hidden">
               clear all
             </Button>
+
             <Settings />
           </div>
         </div>
@@ -336,26 +376,24 @@ const AddPage = () => {
           <div className=" flex flex-col gap-1 border p-3 rounded-2xl bg-gray-50">
             <p className="font-medium text-gray-400 text-xs">Low price</p>
             <input
-              onChange={(e) => {
-                setLowPrice(e.target.value);
-              }}
+              // readOnly={true}
+              onChange={(e)=>{setLowPrice(e.target.value)}}
               value={lowPrice}
               className="bg-gray-50 focus:outline-none focus:bg-none font-bold text-xl"
               type="text"
             />
-            <p className="font-medium text-gray-400 text-xs">DAI per Eth</p>
+            <p className="font-medium text-gray-400 text-xs">{poolState?.selectedPoolTokenOneData?.symbol} per {poolState?.selectedPoolTokenZeroData?.symbol}</p>
           </div>
           <div className=" flex flex-col gap-1 border p-3 rounded-2xl bg-gray-50">
             <p className="font-medium text-gray-400 text-xs">High price</p>
             <input
-              onChange={(e) => {
-                setHighPrice(e.target.value);
-              }}
+            // readOnly={true}
+            onChange={(e)=>{setHighPrice(e.target.value)}}
               value={highPrice}
               className="bg-gray-50 focus:outline-none focus:bg-none font-bold text-xl"
               type="text"
             />
-            <p className="font-medium text-gray-400 text-xs">DAI per Eth</p>
+            <p className="font-medium text-gray-400 text-xs">{poolState?.selectedPoolTokenOneData?.symbol} per {poolState?.selectedPoolTokenZeroData?.symbol}</p>
           </div>
         </div>
 
@@ -379,7 +417,7 @@ const AddPage = () => {
             <div>
               <input
                 onChange={(e) => {
-                  handleAmountInput(e);
+                  handleAmountOneInput(e);
                 }}
                 value={token0AmountToDeposit}
                 placeholder="0"
@@ -390,6 +428,7 @@ const AddPage = () => {
             </div>
             {poolState?.selectedPoolTokenZeroData && (
               <Button
+              disabled={isLoading}
                 className="flex gap-2 items-center rounded-full"
                 variant="outline"
               >
@@ -419,6 +458,7 @@ const AddPage = () => {
             </div>
             {poolState?.selectedPoolTokenOneData && (
               <Button
+              disabled={isLoading}
                 className="flex gap-2 items-center rounded-full"
                 variant="outline"
               >
@@ -437,6 +477,7 @@ const AddPage = () => {
         <div className="w-full mt-5 mb-5">
           {!walletState?.isLoggedIn && (
             <Button
+            disabled={isLoading}
               onClick={connect}
               className="bg-[#ffefff] text-[#fc72ff] w-full text-xl font-semibold"
             >
@@ -448,6 +489,7 @@ const AddPage = () => {
             !token1AmountToDeposit &&
             walletState?.isLoggedIn && (
               <Button
+              disabled={isLoading}
                 variant="secondary"
                 className="text-gray-400 w-full text-xl font-semibold"
               >
@@ -467,6 +509,7 @@ const AddPage = () => {
             token0AmountToDeposit &&
             token1AmountToDeposit && (
               <Button
+              disabled={isLoading}
                 onClick={handleAddPosition}
                 variant="uniswap"
                 className=" w-full text-xl font-semibold opacity-60"

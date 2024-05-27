@@ -41,10 +41,12 @@ contract LiquidityManager is IERC721Receiver {
     }
 
     event PositionMinted(
-        uint256 tokenId,
+        uint256 indexed tokenId,
         uint128 liquidity,
         uint256 amount0,
-        uint256 amount1
+        uint256 amount1,
+        address indexed owner,
+        uint256 indexed timeStamp
     );
 
     event FeesCollected(uint256 amount0, uint256 amount1);
@@ -118,7 +120,7 @@ contract LiquidityManager is IERC721Receiver {
      * @return amount0 The amount of token0
      * @return amount1 The amount of token1
      */
-    function mintNewPosition(address _tokenOne,address _tokenTwo,uint256 amount0ToMint,uint256 amount1ToMint,uint24 _poolFee)
+    function mintNewPosition(address _tokenOne,address _tokenTwo,uint256 amount0ToMint,uint256 amount1ToMint,uint24 _poolFee,int24 _tickLower,int24 _tickUpper)
         external
         returns (
             uint256 tokenId,
@@ -127,13 +129,7 @@ contract LiquidityManager is IERC721Receiver {
             uint256 amount1
         )
     {
-        console.log("Pass 1");
-        // For this example, user will provide equal amounts of liquidity in both assets.
-        // Providing liquidity in both assets means liquidity will be earning fees and is considered in-range.
-        // uint256 amount0ToMint = 1e18;
-        // uint256 amount1ToMint = 1e6;
-
-        // Approve the position manager
+        console.log("Pass 8 ",_poolFee, amount0ToMint,amount1ToMint);
         TransferHelper.safeApprove(
             _tokenOne,
             address(NonfungiblePositionManager),
@@ -151,8 +147,10 @@ contract LiquidityManager is IERC721Receiver {
                 token0: _tokenOne,
                 token1: _tokenTwo,
                 fee: _poolFee,
-                tickLower: TickMath.MIN_TICK,
-                tickUpper: TickMath.MAX_TICK,
+                // tickLower: TickMath.MIN_TICK,
+                // tickUpper: TickMath.MAX_TICK,
+                tickLower: _tickLower,
+                tickUpper: _tickUpper,
                 amount0Desired: amount0ToMint,
                 amount1Desired: amount1ToMint,
                 amount0Min: 0,
@@ -165,7 +163,6 @@ contract LiquidityManager is IERC721Receiver {
         (tokenId, liquidity, amount0, amount1) = NonfungiblePositionManager
             .mint(params);
         console.log("Pass 5");
-        // Create a deposit
         _createDeposit(msg.sender, tokenId);
         console.log("Pass 6");
         // Remove allowance and refund in both assets.
@@ -189,7 +186,7 @@ contract LiquidityManager is IERC721Receiver {
             TransferHelper.safeTransfer(_tokenTwo, msg.sender, refund1);
         }
         console.log("Pass 7");
-        emit PositionMinted(tokenId, liquidity, amount0, amount1);
+        emit PositionMinted(tokenId, liquidity, amount0, amount1,msg.sender,block.timestamp);
         console.log("Pass 8 ",amount0, amount1);
     }
 

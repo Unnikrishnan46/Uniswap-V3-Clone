@@ -6,7 +6,7 @@ import SendTab from "./send";
 
 const MainContent = () => {
   return (
-    <div className="w-[30%]">
+    <div className="w-[30%] max-lg:w-[80%] max-md:w-[95%] max-md:mt-16">
       <Tabs defaultValue="swap" className="">
         <div className="flex items-center justify-between">
           <TabsList className="flex gap-6">

@@ -21,6 +21,7 @@ const SwapPage = () => {
   const [tokenInBalance, setTokenInBalance] = useState("");
   const [tokenOutBalance, setTokenOutBalance] = useState("");
   const [spotPrice, setSpotPrice] = useState<any>(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOpenPaytoken = () => {
     dispatch(setPayTokenDialog(true));
@@ -30,52 +31,82 @@ const SwapPage = () => {
     dispatch(setRecieveTokenDialog(true));
   };
 
-  const handleShowDetails = (hash:any)=>{
+  const handleShowDetails = (hash: any) => {
     window.open(`https://etherscan.io/tx/${hash}`);
-  }
+  };
 
   const handleSingleSwapToken = async () => {
-    const tokenIn = swapState.selectedPayTokenData;
-    const tokenOut = swapState.selectedRecieveTokenData;
+    setIsLoading(true);
+    try {
+      setIsLoading(true);
+      const tokenIn = swapState.selectedPayTokenData;
+      const tokenOut = swapState.selectedRecieveTokenData;
 
-    const promise = singleSwapToken(tokenIn, tokenOut, amountIn);
+      const promise = singleSwapToken(tokenIn, tokenOut, amountIn);
 
-    toast.promise(promise, {
-      loading: "Transaction in progress...",
-      success: (data) => {
-        setAmountIn("");
-        setSpotPrice(0);
-        getTokenBalance()
-        if(data.status){
-          return <div className="flex justify-between items-center w-full">
-            <div className="flex gap-2 items-center">
-            <CheckCircle/>
-            <p className="font-semibold ">Token swaped successfully</p>
-            </div>
-            <Button onClick={()=>{handleShowDetails(data.transaction.blockHash)}} className="py-0" variant="uniswap">More Details</Button>
-            </div>
-        }
-      },
-      error: "Error",
-    });
+      toast.promise(promise, {
+        loading: "Transaction in progress...",
+        success: (data) => {
+          setAmountIn("");
+          setSpotPrice(0);
+          getTokenBalance();
+          setIsLoading(true);
+          if (data.status) {
+            return (
+              <div className="flex justify-between items-center w-full">
+                <div className="flex gap-2 items-center">
+                  <CheckCircle />
+                  <p className="font-semibold ">Token swaped successfully</p>
+                </div>
+                <Button
+                  onClick={() => {
+                    handleShowDetails(data.transaction.blockHash);
+                  }}
+                  className="py-0"
+                  variant="uniswap"
+                >
+                  More Details
+                </Button>
+              </div>
+            );
+          }
+        },
+        error: "Error",
+      });
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getTokenBalance = async () => {
-    const tokenInBal = await getTokenInBal(swapState?.selectedPayTokenData);
-    setTokenInBalance(tokenInBal);
-    const tokenOutBal = await getTokenOutBal(
-      swapState.selectedRecieveTokenData
-    );
-    setTokenOutBalance(tokenOutBal);
+    setIsLoading(true);
+    try {
+      const tokenInBal = await getTokenInBal(swapState?.selectedPayTokenData);
+      setTokenInBalance(tokenInBal);
+      const tokenOutBal = await getTokenOutBal(
+        swapState.selectedRecieveTokenData
+      );
+      setTokenOutBalance(tokenOutBal);
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInput = async (e) => {
-    setAmountIn(e.target.value);
-    const tokenIn = swapState?.selectedPayTokenData;
-    const tokenOut = swapState?.selectedRecieveTokenData;
-    if (tokenIn && tokenOut) {
-      const price = await getSpotPrice(tokenIn, tokenOut, e.target.value);
-      setSpotPrice(price);
+    setIsLoading(true);
+    try {
+      setAmountIn(e.target.value);
+      const tokenIn = swapState?.selectedPayTokenData;
+      const tokenOut = swapState?.selectedRecieveTokenData;
+      if (tokenIn && tokenOut) {
+        const price = await getSpotPrice(tokenIn, tokenOut, e.target.value);
+        setSpotPrice(price);
+      }
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,6 +134,7 @@ const SwapPage = () => {
         </div>
         <div className="flex flex-col gap-2 items-end">
           <Button
+            disabled={isLoading}
             onClick={handleOpenPaytoken}
             variant="outline"
             className="rounded-full"
@@ -140,6 +172,7 @@ const SwapPage = () => {
         <div className="flex flex-col gap-2 items-end justify-center">
           {swapState?.selectedRecieveTokenData && (
             <Button
+              disabled={isLoading}
               onClick={handleOpenRecieveToken}
               variant="outline"
               className="rounded-full"
@@ -157,6 +190,7 @@ const SwapPage = () => {
           )}
           {!swapState?.selectedRecieveTokenData && (
             <Button
+              disabled={isLoading}
               onClick={handleOpenRecieveToken}
               className="flex items-center bg-[#fc72ff] text-white rounded-full text-base"
             >
@@ -172,18 +206,19 @@ const SwapPage = () => {
         </div>
       </div>
       {!swapState?.selectedRecieveTokenData && (
-        <Button variant="secondary" className="rounded-xl">
+        <Button disabled={isLoading} variant="secondary" className="rounded-xl">
           Select a Token
         </Button>
       )}
       {swapState?.selectedRecieveTokenData && !amountIn && (
-        <Button variant="secondary" className="rounded-xl">
+        <Button disabled={isLoading} variant="secondary" className="rounded-xl">
           Enter an amount
         </Button>
       )}
 
       {swapState?.selectedRecieveTokenData && amountIn && (
         <Button
+          disabled={isLoading}
           onClick={() => {
             handleSingleSwapToken();
           }}

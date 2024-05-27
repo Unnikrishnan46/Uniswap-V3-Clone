@@ -36,7 +36,7 @@ export interface LiquidityManagerInterface extends utils.Interface {
     "decreaseLiquidityInHalf(uint256)": FunctionFragment;
     "deposits(uint256)": FunctionFragment;
     "increaseLiquidityCurrentRange(uint256,uint256,uint256)": FunctionFragment;
-    "mintNewPosition(address,address,uint256,uint256,uint24)": FunctionFragment;
+    "mintNewPosition(address,address,uint256,uint256,uint24,int24,int24)": FunctionFragment;
     "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
     "poolFee()": FunctionFragment;
   };
@@ -88,6 +88,8 @@ export interface LiquidityManagerInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
@@ -135,7 +137,7 @@ export interface LiquidityManagerInterface extends utils.Interface {
     "FeesCollected(uint256,uint256)": EventFragment;
     "LiquidityDecreasedByHalf(uint256,uint256)": EventFragment;
     "LiquidityIncreased(uint256,uint256,uint256)": EventFragment;
-    "PositionMinted(uint256,uint128,uint256,uint256)": EventFragment;
+    "PositionMinted(uint256,uint128,uint256,uint256,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "FeesCollected"): EventFragment;
@@ -185,9 +187,11 @@ export interface PositionMintedEventObject {
   liquidity: BigNumber;
   amount0: BigNumber;
   amount1: BigNumber;
+  owner: string;
+  timeStamp: BigNumber;
 }
 export type PositionMintedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber, string, BigNumber],
   PositionMintedEventObject
 >;
 
@@ -261,6 +265,8 @@ export interface LiquidityManager extends BaseContract {
       amount0ToMint: PromiseOrValue<BigNumberish>,
       amount1ToMint: PromiseOrValue<BigNumberish>,
       _poolFee: PromiseOrValue<BigNumberish>,
+      _tickLower: PromiseOrValue<BigNumberish>,
+      _tickUpper: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -316,6 +322,8 @@ export interface LiquidityManager extends BaseContract {
     amount0ToMint: PromiseOrValue<BigNumberish>,
     amount1ToMint: PromiseOrValue<BigNumberish>,
     _poolFee: PromiseOrValue<BigNumberish>,
+    _tickLower: PromiseOrValue<BigNumberish>,
+    _tickUpper: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -381,6 +389,8 @@ export interface LiquidityManager extends BaseContract {
       amount0ToMint: PromiseOrValue<BigNumberish>,
       amount1ToMint: PromiseOrValue<BigNumberish>,
       _poolFee: PromiseOrValue<BigNumberish>,
+      _tickLower: PromiseOrValue<BigNumberish>,
+      _tickUpper: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, BigNumber, BigNumber, BigNumber] & {
@@ -429,17 +439,21 @@ export interface LiquidityManager extends BaseContract {
       amount1?: null
     ): LiquidityIncreasedEventFilter;
 
-    "PositionMinted(uint256,uint128,uint256,uint256)"(
-      tokenId?: null,
+    "PositionMinted(uint256,uint128,uint256,uint256,address,uint256)"(
+      tokenId?: PromiseOrValue<BigNumberish> | null,
       liquidity?: null,
       amount0?: null,
-      amount1?: null
+      amount1?: null,
+      owner?: PromiseOrValue<string> | null,
+      timeStamp?: PromiseOrValue<BigNumberish> | null
     ): PositionMintedEventFilter;
     PositionMinted(
-      tokenId?: null,
+      tokenId?: PromiseOrValue<BigNumberish> | null,
       liquidity?: null,
       amount0?: null,
-      amount1?: null
+      amount1?: null,
+      owner?: PromiseOrValue<string> | null,
+      timeStamp?: PromiseOrValue<BigNumberish> | null
     ): PositionMintedEventFilter;
   };
 
@@ -478,6 +492,8 @@ export interface LiquidityManager extends BaseContract {
       amount0ToMint: PromiseOrValue<BigNumberish>,
       amount1ToMint: PromiseOrValue<BigNumberish>,
       _poolFee: PromiseOrValue<BigNumberish>,
+      _tickLower: PromiseOrValue<BigNumberish>,
+      _tickUpper: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -529,6 +545,8 @@ export interface LiquidityManager extends BaseContract {
       amount0ToMint: PromiseOrValue<BigNumberish>,
       amount1ToMint: PromiseOrValue<BigNumberish>,
       _poolFee: PromiseOrValue<BigNumberish>,
+      _tickLower: PromiseOrValue<BigNumberish>,
+      _tickUpper: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

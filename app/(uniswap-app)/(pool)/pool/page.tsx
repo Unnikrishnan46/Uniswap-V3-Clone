@@ -2,15 +2,14 @@
 import TokenBadges from "@/components/internal/tokenBadge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { imagePaths } from "@/constants/imagePaths";
-import { getAllPositions } from "@/utils/appFeatures";
+import { getAllPositions} from "@/utils/appFeatures";
+import { getPoolDetails } from "@/utils/closestTick";
 import {
   Airplay,
   ArrowUpRight,
   Ban,
   ChevronDown,
   Circle,
-  MoveHorizontal,
   Plus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -37,6 +36,7 @@ const PoolPage = () => {
 
   useEffect(() => {
     getPositions();
+    getPoolDetails()
   }, []);
 
   const handlePositionClick = (positionId)=>{
@@ -44,17 +44,17 @@ const PoolPage = () => {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center h-[90.5%]">
-      <div className="flex flex-col gap-2 w-[50%]">
-        <div className="flex gap-2 justify-between items-center w-full">
+    <div className="flex flex-col justify-center items-center h-[90.5%] max-sm:justify-start">
+      <div className="flex flex-col gap-2 w-[50%] max-lg:w-[80%] max-sm:w-[95%] max-sm:mt-20 items-center justify-center">
+        <div className="flex gap-2 justify-between items-center w-full max-sm:items-start">
           <div className="flex gap-2 items-center">
-            <h1>Positions</h1>
+            <h1 className="text-3xl font-medium">Positions</h1>
             <Button variant="secondary" className="flex gap-2">
               <span>v3</span>
             </Button>
           </div>
           <div className="flex gap-2 items-center">
-            <Button variant="outline">
+            <Button variant="outline" className="max-sm:hidden">
               More <ChevronDown />
             </Button>
             <Button onClick={handleNewPosition} variant="uniswap">
@@ -106,19 +106,7 @@ const PoolPage = () => {
                       </h1>
                       <p className="text-sm text-gray-300">{item?.fee}%</p>
                     </div>
-                    <div className="flex">
-                      <p className="text-xs text-gray-500 flex items-center gap-1">
-                        Min:{" "}
-                        <span className="text-xs font-semibold text-black">
-                          {item?.minXvalue} {item?.token0Symbol} per {item?.token1Symbol}{" "}
-                        </span>
-                        <MoveHorizontal size={15} color="black" />
-                        Max:{" "}
-                        <span className="text-xs font-semibold text-black">
-                        {item?.maxYvalue} {item?.token0Symbol} per {item?.token1Symbol}
-                        </span>
-                      </p>
-                    </div>
+                    
                   </div>
                   <div className="flex gap-1 items-center">
                     {item?.currentLiquiditystatus &&
@@ -163,7 +151,7 @@ const PoolPage = () => {
           )}
         </div>
 
-        <div className="flex w-full gap-2">
+        <div className="flex w-full gap-2 max-md:hidden">
           <div className="flex flex-col gap-2 border rounded-lg p-3 w-[60%]">
             <p className="font-semibold flex">
               Learn about providing liquidity <ArrowUpRight />

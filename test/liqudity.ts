@@ -1,82 +1,108 @@
 import { expect } from "chai";
 import { ethers, network } from "hardhat";
 
-const DAI = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
-const USDC = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-const DAI_WHALE = "0x4e68Ccd3E89f51C3074ca5072bbAC773960dFa36";
-const USDC_WHALE = "0xb4dB55a20E0624eDD82A0Cf356e3488B4669BD27";
-// "0x97f991971a37D4Ca58064e6a98FC563F03A71E5c"
-describe("LiquidityExamples", () => {
-  let liquidityExamples;
-  let accounts;
-  let dai;
-  let usdc;
+describe("LiquidityManager", function () {
+  let liquidityManager;
+  let token0Contract;
+  let token1Contract;
+  let token0Decimal;
+  let token1Decimal
+  let user;
+  let token0Amount;
+  let token1Amount;
+  let fee;
+  let TickL
+  let TickU
+  let tokenId;
 
-  before(async () => {
-    accounts = await ethers.getSigners();
-    const LiquidityExamples = await ethers.getContractFactory(
-      "LiquidityExamples"
+  // let token0Address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+  // let token1Address = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT
+
+  // let token0Address = "0x6B175474E89094C44Da98b954EedeAC495271d0F";  // DAI
+  // let token1Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";  // USDC
+
+  // let token0Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";  // USDC
+  // let token1Address = "0xdAC17F958D2ee523a2206206994597C13D831ec7";  // USDT
+
+  let token0Address = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";  // UNI
+  let token1Address = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";  // WETH
+
+    // let token0Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";  // USDC
+    // let token1Address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+
+    // let token0Address = "0x6B175474E89094C44Da98b954EedeAC495271d0F";  // DAI
+    // let token1Address = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; // WETH
+
+  token0Decimal = 18;
+  token1Decimal = 18;
+  fee = 3000;
+
+
+  beforeEach(async function () {
+    user = await ethers.getSigners();
+    const LiquidityManager = await ethers.getContractFactory(
+      "LiquidityManager"
     );
-    liquidityExamples = await LiquidityExamples.deploy();
-    await liquidityExamples.waitForDeployment();
-    dai = await ethers.getContractAt("IERC20", DAI);
-    usdc = await ethers.getContractAt("IERC20", USDC);
-
-
-    await network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [DAI_WHALE],
-    });
-
-    const daiWhale = await ethers.getSigner(DAI_WHALE);
-
-    await network.provider.request({
-      method: "hardhat_impersonateAccount",
-      params: [USDC_WHALE],
-    });
-
-    const usdcWhale = await ethers.getSigner(USDC_WHALE);
-
-    const daiAmount = BigInt("100");
-    const usdcAmount = BigInt("1000000");
-
-    console.log(
-      "USDC Whale balance before transfer: ",
-      (await usdc.balanceOf(usdcWhale.address)).toString()
-    );
-    console.log("USDC Amount to transfer: ", usdcAmount.toString());
-
-    console.log("DAI Balance : ", await dai.balanceOf(accounts[0].address));
-    console.log("USDC Balance : ", await usdc.balanceOf(accounts[0].address));
-
-    // expect(await dai.balanceOf(daiWhale.address)).to.gte(daiAmount);
-    expect(await usdc.balanceOf(usdcWhale.address)).to.gte(usdcAmount);
-    const balance = await ethers.provider.getBalance(accounts[0]);
-    console.log("Ether Balance :", balance);
+    liquidityManager = await LiquidityManager.deploy();
+    await liquidityManager.deployed();
     console.log("Pass 1");
-    // await dai.connect(daiWhale).transfer(accounts[0].address, daiAmount);
+    token0Contract = await ethers.getContractAt("IERC20", token0Address);
+    token1Contract = await ethers.getContractAt("IERC20", token1Address);
     console.log("Pass 2");
-    await usdc.connect(usdcWhale).transfer(accounts[0].address, usdcAmount);
-    console.log("pass 3");
-  });
+    token0Amount = ethers.utils.parseUnits("1",token0Decimal);
+    token1Amount = ethers.utils.parseUnits("100", token1Decimal);
 
-  it("mintNewPosition", async () => {
-    const daiAmount = BigInt("100000000000000000");
-    const usdcAmount = BigInt("100000");
-    console.log("Pass 4",accounts[0].address);
-    await dai.connect(accounts[0]).transfer(liquidityExamples.target, daiAmount);
+    const uniswapV3Factory = "0x1F98431c8aD98523631AE4a59f267346ea31F984";
+    const factoryContract = await ethers.getContractAt(
+      "IUniswapV3Factory",
+      uniswapV3Factory
+    );
+    const poolAddress = await factoryContract.getPool(
+      token0Address,
+      token1Address,
+      fee
+    );
+
+    const poolContract = await ethers.getContractAt("IUniswapV3Pool",poolAddress);
+    const S0 = await poolContract.slot0() as any;
+    console.log(S0);
+    
+var CT = parseInt(S0.tick);
+var Tsp = parseInt(await poolContract.tickSpacing() as any);
+var NLT = (Math.floor(CT/Tsp))*Tsp;
+var NHT = ((Math.floor(CT/Tsp))*Tsp)+Tsp;
+TickL = NLT.toString();  //Nearest usable lower tick This would have the current tick range Liquidity
+TickU = NHT.toString();  //Nearest usable upper tick   
+    
+console.log(CT,Tsp,NLT,NHT);
+
+  console.log(TickL,TickU);
+  
+    console.log("Pass 3");
+    await token0Contract.connect(user[0]).approve(liquidityManager.address, ethers.constants.MaxUint256);
+    console.log("Pass 4");
+    await token1Contract.connect(user[0]).approve(liquidityManager.address, ethers.constants.MaxUint256);
     console.log("Pass 5");
-    await usdc.connect(accounts[0]).transfer(liquidityExamples.target, usdcAmount);
+    await token0Contract.connect(user[0]).transfer(liquidityManager.address, token0Amount);
     console.log("Pass 6");
-    await liquidityExamples.mintNewPosition();
+    await token1Contract.connect(user[0]).transfer(liquidityManager.address, token1Amount);
     console.log("Pass 7");
-    console.log(
-      "DAI balance after add liquidity : ",
-      await dai.balanceOf(accounts[0].address)
-    );
-    console.log(
-      "USDC balance after add liquidity : ",
-      await usdc.balanceOf(accounts[0].address)
-    );
+  });
+  
+  it("mintNewPosition", async function () {
+    console.log("mintNewPosition working");
+    const amount0ToMint = token0Amount;
+    const amount1ToMint = token1Amount;
+    console.log("Pass 9 ",amount0ToMint,amount1ToMint);
+    const tx = await liquidityManager.mintNewPosition(token0Address,token1Address,amount0ToMint,amount1ToMint,fee,TickL,TickU);
+    console.log("Pass 10 ");
+    const receipt = await tx.wait();
+    // console.log("Pass 11",receipt);
+    const events = receipt.events?.filter((x) => x.event == "PositionMinted");
+    // console.log("Pass 12 ",events);
+    if (events !== undefined && events.length > 0) {
+      tokenId = events[0].args["tokenId"].toString();
+      console.log(tokenId);
+    }
   });
 });

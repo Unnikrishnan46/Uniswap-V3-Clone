@@ -1,23 +1,24 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import DevelopersSection from "@/components/internal/developersSection";
+import EchoSystemSection from "@/components/internal/echoSystemSection";
+import HeroSection from "@/components/internal/heroSection";
+import HomeAbsolute from "@/components/internal/homeAbsolute";
+import HomeFooter from "@/components/internal/homeFooter";
+import HomeNavBar from "@/components/internal/homeNavbar";
+import ProtocolSection from "@/components/internal/protocolSection";
 
 export default function Home() {
-    const router = useRouter();
-
-    const handleLaunchAppClick = ()=>{
-      console.log("Working");
-      
-        router.push("/swap");
-    }
-
-
-
-    
   return (
-    <div className="h-screen w-screen flex justify-center items-center">
-      <Button onClick={handleLaunchAppClick}>Launch App</Button>
+    <div className="h-full w-full bg-[#181a1f] relative">
+      <HomeNavBar/>
+      <HeroSection/>
+      <EchoSystemSection/>
+      <DevelopersSection/>
+      <ProtocolSection/>
+      <HomeFooter/>
+      <HomeAbsolute/>
+      <img className="absolute top-12" src="/images/homePage/unicorn_banner.png" alt="" />
     </div>
   );
 }
