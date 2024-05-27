@@ -9,15 +9,14 @@ import {
   LifeTokenAddress,
   SingleSwapTokenAddress,
   SwapMultiHopAddress,
-  USDCAddress,
   liquidityContractAddress,
   singleSwapTokenABI,
   swapMultiHopABI,
   transferContractABI,
   transferContractAddress,
 } from "@/constants/constants";
-import { ethers, FixedNumber } from "ethers";
-import { Token, BigintIsh, CurrencyAmount } from "@uniswap/sdk-core";
+import { ethers } from "ethers";
+import { Token } from "@uniswap/sdk-core";
 import {
   Pool,
   computePoolAddress,
@@ -27,20 +26,15 @@ import {
 import IUniswapV3Pool from "@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json";
 import INONFUNGIBLE_POSITION_MANAGER from "@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json";
 import FactoryAbi from "@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json";
-import JSBI from "jsbi";
 import LiquidityManager from "@/constants/LiquidityManager.json";
 import axios from "axios";
 import { getTokenAmounts } from "./priceHelpers";
 import { getChartData, suii } from "./fetchChartData";
 import { unixToDate } from "./date";
 import { CoinList, HistoricalChart, SingleCoin } from "./api";
-const univ3prices = require("@thanpolas/univ3prices");
-const cp = require( 'coinpaprika-js' );
 
 const connectingWithBooToken = async () => {
   try {
-    // const provider = await new ethers.BrowserProvider((window as any).ethereum);
-    // await provider.send("eth_requestAccounts", []);
     const provider = await new ethers.providers.JsonRpcProvider(
       "http://127.0.0.1:8545/"
     );
@@ -58,8 +52,6 @@ const connectingWithBooToken = async () => {
 
 const connectingWithLifeToken = async () => {
   try {
-    // const provider = await new ethers.BrowserProvider((window as any).ethereum);
-    // await provider.send("eth_requestAccounts", []);
     const provider = await new ethers.providers.JsonRpcProvider(
       "http://127.0.0.1:8545/"
     );
@@ -77,8 +69,6 @@ const connectingWithLifeToken = async () => {
 
 const connectingWithSingleSwapToken = async () => {
   try {
-    // const provider = await new ethers.BrowserProvider((window as any).ethereum);
-    // await provider.send("eth_requestAccounts", []);
     const provider = await new ethers.providers.JsonRpcProvider(
       "http://127.0.0.1:8545/"
     );
@@ -96,8 +86,6 @@ const connectingWithSingleSwapToken = async () => {
 
 const connectingWithSwapMultiHop = async () => {
   try {
-    // const provider = await new ethers.BrowserProvider((window as any).ethereum);
-    // await provider.send("eth_requestAccounts", []);
     const provider = await new ethers.providers.JsonRpcProvider(
       "http://127.0.0.1:8545/"
     );
@@ -115,8 +103,6 @@ const connectingWithSwapMultiHop = async () => {
 
 const connectingWithIWETHToken = async () => {
   try {
-    // const provider = await new ethers.BrowserProvider((window as any).ethereum);
-    // await provider.send("eth_requestAccounts", []);
     const provider = await new ethers.providers.JsonRpcProvider(
       "http://127.0.0.1:8545/"
     );
@@ -134,8 +120,6 @@ const connectingWithIWETHToken = async () => {
 
 const connectingWithDaiToken = async () => {
   try {
-    // const provider = await new ethers.BrowserProvider((window as any).ethereum);
-    // await provider.send("eth_requestAccounts", []);
     const provider = await new ethers.providers.JsonRpcProvider(
       "http://127.0.0.1:8545/"
     );
